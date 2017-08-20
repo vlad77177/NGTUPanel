@@ -1,0 +1,416 @@
+@CHARSET "UTF-8";
+body {
+	margin: 0 0 0 0;
+	font-family: Lucida Console;
+	font-size: 1.75vw;
+	background:url(images/background.jpg) no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+	height:100vh;
+	/*opacity:1.0;*/
+}
+
+/* Классы */
+
+.class-grey-borders{
+	border:1px solid #bbbbbb;
+}
+.class-label{
+	padding:20px 20px 20px 20px;
+}
+.class-pointable{
+	cursor:pointer;
+}
+
+/* Див контент */
+
+#div-content{
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	margin: 20px 20px 20px 20px;
+}
+
+.white-block{
+	background-color:#ffffff;
+	opacity:0.9;
+}
+
+
+.flex-row-between{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+}
+.flex-column-between{
+	display:flex;
+	flex-direction:column;
+	justify-content:space-between;
+}
+
+header{
+	display:flex;
+	flex-direction:row;
+	align-items:center;
+	justify-content:space-between;
+	margin: 20px 20px 20px 20px;
+	padding:10px 10px 10px 10px;
+}
+footer{
+	margin: 20px 20px 20px 20px;
+	padding:10px 10px 10px 10px;
+	height:10%;
+}
+
+#div-center{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+	position:relative;
+	width:100%;
+	height:100%;
+}
+
+/*Крупный блок с названиями панели, далее с большими и маыми буквами */
+
+#div-panelname{
+	display:flex;
+	align-items:flex-end;
+	height:100%;
+}
+#div-pnamebigwords{
+	font-size:5vw;
+	-webkit-text-stroke: 2px black;
+	text-shadow: #c0c0c0 3px 3px 0, #c0c0c0 -3px -3px 0, 
+                 #c0c0c0 -3px 3px 0, #c0c0c0 3px -3px 0;
+	font-weight:bolder;
+	color:#12de2c;
+}
+#div-pnamesmallwords{
+	font-size:3vw;
+	font-weight:bolder;
+	margin-left:10px;
+	padding-bottom:3px;
+}
+
+/* конец */
+
+/* Страница регистрации */
+
+#div-logging{
+	display:flex;
+	flex-direction:column;
+	justify-content:space-between;
+	width:50%;
+	height:50%;
+	margin-top:20%;
+	padding:20px 20px 20px 20px;
+}
+#div-logging-text{
+	
+}
+
+/* конец */
+
+#div-top-menu{
+	display:flex;
+	flex-direction:row;
+	margin-left:10%;
+	width:80%;
+	justify-content:center;;
+}
+#div-top-menu div{
+	padding: 5px 5px 5px 5px;
+	margin:0px 1px 0px 1px;
+}
+
+/* По таблице */
+
+#div-content-table-block{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+	max-width:70%;
+}
+#div-table-content{
+	display:flex;
+	padding:20px 20px 20px 20px;
+	flex-direction:column;
+	width:100%;
+	overflow:auto;
+}
+#div-table-info div,select{
+	margin:20px 0px 20px 0px;
+}
+#div-table-info div:first-child{
+	margin-right:20px;
+}
+#div-table-info{
+	display:flex;
+	flex-direction:row;
+}
+#div-table{
+	width:100%;
+}
+#div-table-list{
+	margin:0px 0px 0px 0px;
+	padding:20px 20px 20px 20px;
+	width:25vw;
+	margin-left:5px;
+}
+#div-table-list div{
+	margin:3px 3px 3px 3px;
+	cursor:pointer;
+}
+#div-table-list div:first-child{
+	border-bottom:1px solid black;
+	margin:10px 10px 10px 10px;
+	padding:0px 0px 20px 0px;
+	text-align:center;
+	cursor:default;
+}
+#div-table table{
+	width:100%;
+	font-size:1.5vw;
+	border:3px solid grey;
+	border-collapse:collapse;
+}
+#div-table table tr:first-child{
+	border-bottom:3px solid grey;
+}
+#div-table table tr,td{
+	border-left:1px solid grey;
+	border-right:1px solid grey;
+	padding:5px 5px 5px 5px;
+}
+#div-table-pages{
+	display:flex;
+	flex-direction:row;
+	justify-content:center;
+}
+#div-table-pages div{
+	margin:5px 10px 5px 10px;
+	cursor:pointer;
+}
+
+/* значек пользователя в хедере */
+
+#div-user-mini-window-content{
+	display:flex;
+	flex-direction:row;
+	align-items:center;
+	margin: 20px 20px 20p 20px;
+}
+#div-user-mini-window-content > div{
+	border:1px solid #bbbbbb;
+}
+#div-user-mini-window-avatar{
+	margin:10px 10px 10px 10px;
+}
+#div-user-mini-window-avatar, #div-user-mini-window-avatar img{
+	width:10vw;
+	height:10vw;
+}
+#div-user-mini-window-text{
+	font-size:1.75vw;
+	display:flex;
+	flex-direction:column;
+	justify-content:center;
+	margin:20px 20px 20px 20px;
+}
+#div-user-mini-window-text > div,table{
+	padding: 5px 5px 5px 5px;
+}
+#div-user-mini-window-text table td,tr{
+	border:0px;
+}
+#div-user-mini-window-role{
+	color:red;
+}
+
+/* Личный кабинет */
+
+#div-lk-content{
+	display:flex;
+	flex-direction:column;
+	width:100%;
+}
+#div-lk-label{
+	width:100%;
+	text-align:center;
+	margin-top:20px;
+}
+#div-lk-user-content{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+	margin:20px 20px 20px 20px;
+}
+#div-lk-avatar, #div-lk-avatar img{
+	width:20vw;
+	height:20vw;
+	border:1px solid #bbbbbb;
+}
+#div-lk-user-content table{
+	height:100%;
+	padding:0px 0px 0px 0px;
+}
+#div-lk-user-content table td,tr{
+	border:0px;
+}
+#div-lk-user-content table td:first-child{
+	background-color:#b9b9b9;
+}
+#div-lk-user-content table td:nth-child(2){
+	background-color:#cecece;
+}
+#div-lk-messages{
+	width:30%;
+	border:1px solid #bbbbbb;
+}
+
+/* Админская панель */
+
+#div-adminpanel-content{
+	width:100%;
+	display:flex;
+	flex-direction:column;
+}
+#div-adminpanel-menu{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-around;
+	border-top:1px solid #bbbbbb;
+	border-bottom:1px solid #bbbbbb;
+	margin:0px 20px 0px 20px;
+}
+#div-adminpanel-info{
+	border:1px solid #bbbbbb;
+	margin: 20px 20px 20px 20px;
+	display:flex;
+	flex-direction:row;
+	justify-content:space-around;
+	align-content:center;
+}
+
+/* Пользователи админа */
+
+#div-admpusermain-content{
+	margin:20px 20px 20px 20px;
+	width:100%;
+	display:flex;
+	flex-direction:column;
+	border:1px solid #bbbbbb;
+}
+#div-admusermain-list-and-create{
+	margin:20px 20px 20px 20px;
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+}
+#div-admusermain-list-and-create div{
+	border:1px solid #bbbbbb;
+}
+#div-admpusermain-list{
+	margin-right:20px;
+	width:100%;
+}
+#div-admpusermain-list-label,#div-admpusermain-create-user-label{
+	border-bottom:1px solid #bbbbbb;
+	text-align:center;
+}
+#div-admpusermain-list-info{
+	
+}
+#div-admpusermain-create-user{
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+}
+#div-admpusermain-create-user-label{
+	
+}
+#div-admpusermain-create-user table{
+	/*width:100%;*/
+}
+#div-admpusermain-create-user table td,tr{
+	border:0px;
+}
+
+/*Конкретный пользователь */
+
+#div-admpusermain-current-user,#div-admusermain-current-user-info-groups > div,#div-admpusermain-current-user-log,#div-admpusermain-current-user-rights{
+	margin:20px 20px 20px 20px;
+	border:1px solid #bbbbbb;
+}
+#div-admpusermain-current-user > div{
+	display:flex;
+	flex-direction:column;
+	justify-content:space-between;
+}
+#div-admpusermain-current-user,#div-admusermain-current-user-info-groups{
+	display:flex;
+	flex-direction:row;
+}
+#div-admusermain-current-user-info-groups div:nth-child(2){
+	display:flex;
+	flex-direction:column;
+}
+#div-admpusermain-current-user-rights table{
+	font-size:1vw;
+}
+#div-admpusermain-current-user-rights table tr td img{
+	cursor:pointer;
+	width:1.5vw;
+	height:1.5vw;
+}
+#div-current-user-groups-button-select{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+}
+
+/* Новая группа */
+
+#div-adminpanel-groups-content{
+	display:flex;
+	flex-direction:column;
+	align-items:center;	
+}
+#div-adminpanel-groups-label{
+	padding:20px 20px 20px 20px;
+}
+#div-adminpanel-groups-info{
+	
+}
+#div-adminpanel-groups-name{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-around;
+}
+#div-adminpanel-groups-info table tr td img{
+	cursor:pointer;
+	width:1.5vw;
+	height:1.5vw;
+}
+#div-adminpanel-groups-info table td{
+	align-items:center;
+	width:20%;
+}
+#div-adminpanel-groups-list table tr td img{
+	cursor:pointer;
+	width:1.5vw;
+	height:1.5vw;
+}
+#div-adminpanel-groups-list-info{
+	
+}
+#div-adminpanel-groups-list-right-info table{
+	font-size:1vw;
+}
+#div-adminpanel-groups-list-right-info table tr td img{
+	width:1.5vw;
+	height:1.5vw;
+}

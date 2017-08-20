@@ -1,0 +1,41 @@
+<div id="div-admpusermain-content">
+	<div id="div-admusermain-list-and-create">
+		<div id="div-admpusermain-list">
+			<div id="div-admpusermain-list-label">Список пользователей:</div>
+			<div id="div-admpusermain-list-info">{ADMPUSERMAIN-USER-LIST}</div>
+		</div>
+		<div id="div-admpusermain-create-user">
+			<div id="div-admpusermain-create-user-label">Новый пользователь:</div>
+			<table>
+				<tr>
+					<td>Роль:</td>
+					<td id='td-role'>{ADMPUSERMAIN-SELECT-ROLE}</td>
+				</tr>
+				<tr>
+					<td>Логин:</td>
+					<td><input name="login" type="text" /></td>
+				</tr>
+				<tr>
+					<td>Пароль:</td>
+					<td><input name="password" type="password" /></td>
+				</tr>
+				<tr>
+					<td>Повторить пароль:</td>
+					<td><input name="repeat-password" type="password" /></td>
+				</tr>
+				<tr>
+					<td>Имя:</td>
+					<td><input name="name" type="text" /></td>
+				</tr>
+				<tr>
+					<td>Фамилия:</td>
+					<td><input name="surname" type="text" /></td>
+				</tr>
+			</table>
+			<button onclick="createuser()">Создать пользователя:</button>
+		</div>
+	</div>
+	<div id="div-admpusermain-current-user">
+	{CURRENT-USER-INF}
+	</div>
+</div>
