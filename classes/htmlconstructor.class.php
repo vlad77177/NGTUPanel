@@ -2,19 +2,30 @@
 
 class HTMLConstructor{
 	//Строим менюшку
-	public function ConstructMenu(){
+	public function ConstructMenu(DBWorker $dbw){
 		$menu='';
+		$labels='';
+		$droptable=false;
 		
-		$labels=array('Поиск','Работа с данными','Просмотреть таблицы','Личный кабинет');
-		
-		for($i=0;$i<count($labels);$i++){
-			$menu=$menu.'<div class="white-block"><a href="'.'/index.php?action='.($i+1).'">'.$labels[$i].'</a></div>';
+		if($dbw->CheckLoggedUserAdmin()==true){
+			$labels=array('Поиск','Работа с данными','Просмотреть таблицы','Личный кабинет');
+			for($i=0;$i<count($labels);$i++){
+				$menu=$menu.'<div class="white-block"><a href="'.'/index.php?action='.($i+1).'">'.$labels[$i].'</a></div>';
+			}
 		}
+		else{
+			$labels=array('Поиск','Работа с данными','Личный кабинет');
+			for($i=0;$i<2;$i++){
+				$menu=$menu.'<div class="white-block"><a href="'.'/index.php?action='.($i+1).'">'.$labels[$i].'</a></div>';
+			}
+			$menu=$menu.'<div class="white-block"><a href="'.'/index.php?action=4">'.$labels[2].'</a></div>';
+		}
+		
 		
 		return $menu;
 	}
 	//Строим основной контент
-	public function ConstructContent($action,Parser $parser,DBWorker $dbworker){
+	public function ConstructContent($action,DBWorker $dbworker){
 		//Переменная с всем контентом
 		$content='';
 		//По реквесту
@@ -23,21 +34,142 @@ class HTMLConstructor{
 				break;
 			}
 			case 2:{	
+				//Строим добавление данных
+				$content=$this->ConstructAddDataContent($dbworker);
 				break;
 			}
 			case 3:{
 				//Строим контент с таблицами
-				$content=$this->ConstructTableContent($parser, $dbworker);
+				$content=$this->ConstructTableContent($dbworker);
 				break;
 			}
 			case 4:{
-				$content=$this->ConstructLK($parser, $dbworker);
+				$content=$this->ConstructLK($dbworker);
 				break;
 			}
 			default:{
 				return 'Стартовая страница';
 			}
 		}
+		
+		return $content;
+	}
+	
+	function ConstructAddDataContent(DBWorker $dbw){
+		$data_patterns=$dbw->GetAddedPatterns();
+		$addc_labels=array(
+				'ADD-DATA-SELECTOR'=>$this->ConstructListAddedItems($data_patterns),
+		);
+		return Parser::TemplateParse('adddata.template.html', $addc_labels);
+	}
+	
+	private function ConstructListAddedItems($dp){
+		$content='<select>';
+		for($i=0;$i<count($dp);$i++){
+			if($dp[$i]['created_first_flag']=='t')
+				$content=$content.'<option data-table="'.$dp[$i]['table_name'].'">'.StringConverter::ConvertTo1251($dp[$i]['data_name']).'</option>';
+		}
+		return $content=$content.'</select>';
+	}
+	
+	public function ConstructAddDataBlock($patt_name,DBWorker $dbw){
+		$user=$dbw->GetUserData();
+		$data_pattern=$dbw->GetAddedPatterns($patt_name);
+		
+		if(SecurityWorker::CheckTheRightOfAdd($user, $data_pattern, $dbw)==false){
+			return 'У вас нет прав на создание записи';
+		}
+		
+		$content='<table>';
+		
+		$dbw->ConnectToPostgreNGTU();
+		
+		/*
+		 * $right_id - права, неоходимые для добавления
+		 * $data_names - названия вводимых полей
+		 * $col_names - название колонок таблицы, в которые будут занесены данные
+		 * $link_id - ссылки на друге таблицы( где -1 - нет ссылки)
+		 * $col_types - типы данных(числовые, строчные, ссылка(внешний ключ) или список(массив внешних ключей))
+		 */
+		
+		$right_id=StringConverter::GetArrayFromPostgreString($data_pattern[0]['right_id']);
+		$data_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['data_names']);
+		$col_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_names']);
+		$link_id=StringConverter::GetArrayFromPostgreString($data_pattern[0]['link_id']);
+		$col_types=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_types']);
+		$needed_right=StringConverter::GetArrayFromPostgreString($data_pattern[0]['needed_right']);
+		
+		for($i=0;$i<$data_pattern[0]['cell_count'];$i++){
+			
+			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($data_names[$i]).':</td><td>';
+			
+			switch($col_types[$i]){
+				case 1:{
+					$content=$content.'<input type="text" data-display="integer" name="'.$col_names[$i].'">';
+					break;
+				}
+				case 2:{
+					$content=$content.'<input type="text" data-display="string" name="'.$col_names[$i].'">';
+					break;
+				}
+				case 3:{
+					$link=$dbw->GetLink($link_id[$i]);//сслыка
+					$display_column=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);//колонки, которые нужно отобразить в option
+					$data=$dbw->GetSomeDataFromTable($link[0]['table_name']);//все данные из нужной таблицы
+					$content=$content.'<select name="'.$col_names[$i].'" data-method="def">';
+					for($j=0;$j<count($data);$j++){
+						$content=$content.'<option data-add="'.$data[$j][$link[0]['col_created_data']].'">';
+						for($k=0;$k<count($display_column);$k++){
+							$content=$content.StringConverter::ConvertTo1251($data[$j][$display_column[$k]]).' ';
+						}
+						$content=$content.'</option>';
+					}
+					$content=$content.'</select>';
+					break;
+				}
+				case 4:{
+					$link=$dbw->GetLink($link_id[$i]);//сслыка
+					$display_column=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);//колонки, которые нужно отобразить в option
+					$data=$dbw->GetSomeDataFromTable($link[0]['table_name']);//все данные из нужной таблицы
+					$content=$content.'<select multiple size="3" name="'.$link[0]['table_name'].'" data-method="multiple">';
+					for($j=0;$j<count($data);$j++){
+						$content=$content.'<option data-add="'.$data[$j][$link[0]['col_created_data']].'">';
+						for($k=0;$k<count($display_column);$k++){
+							$content=$content.StringConverter::ConvertTo1251($data[$j][$display_column[$k]]).' ';
+						}
+						$content=$content.'</option>';
+					}
+					$content=$content.'</select>';
+					break;
+				}
+				case 5:{
+					$link=$dbw->GetLink($link_id[$i]);
+					$display_column=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);//колонки, которые нужно отобразить в option
+					$data=$dbw->GetSomeDataFromTable($link[0]['table_name']);//все данные из нужной таблицы
+					$content=$content.'<div name="'.$link[0]['table_name'].'">';
+					$content=$content.'</div>';
+					break;
+				}
+			}
+			
+			$content=$content.'</td><td>';
+			
+			switch($col_types[$i]){
+				case 3;
+				case 4;
+					$link=$dbw->GetLink($link_id[$i]);
+					if($link[0]['created_new']=='t')
+						$content=$content.'<button name="'.$link[0]['table_name'].'" data-method="create">Создать</button>';
+					break;
+				case 5:
+					$content=$content.'<button name="'.$link[0]['table_name'].'" data-method="add">Добавить</button>';
+					break;
+			}
+			
+			$content=$content.'</td></tr>';
+		}
+		
+		$content=$content.'</table>';
 		
 		return $content;
 	}
@@ -65,7 +197,7 @@ class HTMLConstructor{
 		for($i=0;$i<count($data);$i++){
 			$table=$table.'<tr>';
 			for($j=0;$j<count($data[$i]);$j++){
-				$table=$table.'<td>'.$data[$i][$columns[$j]['column_name']].'</td>';
+				$table=$table.'<td>'.StringConverter::ConvertTo1251($data[$i][$columns[$j]['column_name']]).'</td>';
 			}
 			$table=$table.'</tr>';
 		}
@@ -75,7 +207,7 @@ class HTMLConstructor{
 		return $table;
 	}
 	
-	function ConstructTableContent(Parser $parser,DBWorker $dbw){
+	function ConstructTableContent(DBWorker $dbw){
 		//Получаем имена всех таблиц
 		$table_names=$dbw->GetTableNames();
 		//Строим список		
@@ -87,7 +219,7 @@ class HTMLConstructor{
 				'TABLE-LIST'=>$table_list,
 		);
 		
-		return $parser->TemplateParse($way, $labels);
+		return Parser::TemplateParse($way, $labels);
 		
 	}
 	
@@ -105,8 +237,7 @@ class HTMLConstructor{
 			return '<img src="images/'.$src.'">';
 	}
 	
-	public function ConstructLK(Parser $parser,DBWorker $dbw){
-		$strc=new StringConverter();
+	public function ConstructLK(DBWorker $dbw){
 		
 		$userdata=$dbw->GetUserData();
 		
@@ -118,14 +249,14 @@ class HTMLConstructor{
 		
 		$userdata_labels=array(
 				'LK-AVATAR'=>$this->ConstructUMWAvatar($userdata[0]['avatar']),
-				'LK-TABLE'=>$this->ConstructUserTable($userdata, $parser,$strc),
+				'LK-TABLE'=>$this->ConstructUserTable($userdata),
 				'LK-ADMINPANEL-CONTENT'=>$admin_content
 		);
 		
-		return $parser->TemplateParse('lk.template.html', $userdata_labels);
+		return Parser::TemplateParse('lk.template.html', $userdata_labels);
 	}
 	
-	public function ConstructUserRolesForCreate(array $userdata,DBWorker $dbw,StringConverter $strc){
+	public function ConstructUserRolesForCreate(array $userdata,DBWorker $dbw){
 		$roles_names=$dbw->GetRolesNames();
 		$content='<select>';
 		$for_i=1;
@@ -133,20 +264,19 @@ class HTMLConstructor{
 			$for_i=0;
 		}
 		for($i=$for_i;$i<count($roles_names);$i++)
-			$content=$content.'<option>'.$strc->ConvertTo1251($roles_names[$i]['role_name']).'</option>';
+			$content=$content.'<option>'.StringConverter::ConvertTo1251($roles_names[$i]['role_name']).'</option>';
 		$content=$content.'</select>';
 		return $content;
 	}
 	
 	public function ConstructRightsForNewGroup(array $nr){
 		$content='';
-		$strc=new StringConverter();
 		$image_no='<img src="images/no.png">';
 		$content=$content.'<table>';
 		$content=$content.'<tr><td>Роль</td><td>Чтение</td><td>Запись/Редактирование</td><td>Удаление</td></tr>';
 		for($i=0;$i<count($nr);$i++){
 			$content=$content.'<tr>';
-			$content=$content.'<td>'.$strc->ConvertTo1251($nr[$i]['name']).'</td>';
+			$content=$content.'<td>'.StringConverter::ConvertTo1251($nr[$i]['name']).'</td>';
 			for($j=0;$j<3;$j++){
 				$content=$content.'<td onclick="changeRight('.$i.','.$j.',0,\'new\')">'.$image_no.'</td>';
 			}
@@ -164,8 +294,6 @@ class HTMLConstructor{
 		
 		$name_def='';
 		
-		$strc=new StringConverter();
-		
 		$content='<table>';
 		
 		$for_r=0;
@@ -175,7 +303,7 @@ class HTMLConstructor{
 		for($i=0;$i<count($nr);$i++){
 			$current_img='';
 			$content=$content.'<tr>';
-			$content=$content.'<td>'.$strc->ConvertTo1251($nr[$i]['name']).'</td>';
+			$content=$content.'<td>'.StringConverter::ConvertTo1251($nr[$i]['name']).'</td>';
 			
 			if($nr[$i]['id']==$r[$for_r]){
 				$current_img=$image_ok;
@@ -220,13 +348,12 @@ class HTMLConstructor{
 		if($gn==null)
 			return 'Небыло создано еще ни одной группы!';
 		else{
-			$strc=new StringConverter();
 			$content='<table>';
 			for($i=0;$i<count($gn);$i++){
 				$content=$content.'<tr><td><div onclick="getrights('
 						.$i.')" class="class-pointable">'
-						.$strc->ConvertTo1251($gn[$i]['name']).'</div></td><td><img src="images/minus.png" onclick="deletegroup(\''
-						.$strc->ConvertTo1251($gn[$i]['name']).'\')"></td></tr>';
+						.StringConverter::ConvertTo1251($gn[$i]['name']).'</div></td><td><img src="images/minus.png" onclick="deletegroup(\''
+						.StringConverter::ConvertTo1251($gn[$i]['name']).'\')"></td></tr>';
 			}
 			$content=$content.'</table>';
 			return $content;
@@ -234,68 +361,68 @@ class HTMLConstructor{
 	}
 	
 	public function ConstructUserList(array $userdata){
-		$strc=new StringConverter();
 		$content='';
 		$content=$content.'<table>';
 		for($i=0;$i<count($userdata);$i++){
-			$content=$content.'<tr name="'.$strc->ConvertTo1251($userdata[$i]['login']).'" class="class-pointable" onclick="getcurrentuserinfo(\''.$strc->ConvertTo1251($userdata[$i]['login']).'\')"><td>'.($i+1).'</td><td>'.$strc->ConvertTo1251($userdata[$i]['login']).'</td><td>'.$strc->ConvertTo1251($userdata[$i]['role_name']).'</td></tr>';
+			$content=$content.'<tr name="'.StringConverter::ConvertTo1251($userdata[$i]['login']).'" class="class-pointable" onclick="getcurrentuserinfo(\''.StringConverter::ConvertTo1251($userdata[$i]['login']).'\')"><td>'.($i+1).'</td><td>'.StringConverter::ConvertTo1251($userdata[$i]['login']).'</td><td>'.StringConverter::ConvertTo1251($userdata[$i]['role_name']).'</td></tr>';
 		}
 		$content=$content.'</table>';
 		return $content;
 	}
 	//Сборка шаблона по профилю пользователя(для админов)
 	public function ConstructCurrentUser($login,$dbw){
-
-		$parser=new Parser();
-		$strc=new StringConverter();
 		
 		$userdata=$dbw->GetUserData($login);
 		
 		$current_user_inf_labels=array(
-				'USER-INFO'=>$this->ConstructUserTable($userdata,$parser,$strc),
-				'USER-GROUPS'=>$this->ConstructCurrentUserGroups($userdata, $dbw, $parser, $strc),
+				'USER-INFO'=>$this->ConstructUserTable($userdata),
+				'USER-GROUPS'=>$this->ConstructCurrentUserGroups($userdata, $dbw),
 				'USER-LOG'=>'soon',
-				'USER-RIGHTS-LIST'=>$this->ConstructCurrentUserRights($userdata, $dbw, $parser, $strc)
+				'USER-RIGHTS-LIST'=>$this->ConstructCurrentUserRights($userdata, $dbw)
 		);
 		
-		return $parser->TemplateParse('adminpaneluserotherinf.template.html', $current_user_inf_labels);
+		return Parser::TemplateParse('adminpaneluserotherinf.template.html', $current_user_inf_labels);
 	}
 	//Визуализация таблицы для конкретного пользователя
-	private function ConstructCurrentUserRights($userdata, DBWorker $dbw, $parser, StringConverter $strc){
+	private function ConstructCurrentUserRights($userdata, DBWorker $dbw){
 		$names_rights=$dbw->GetRightsNames();
 		
-		$read=$strc->GetArrayFromAccArray($dbw->GetSummRightTable($userdata[0]['id'], 'read'),'unnest');
-		$add=$strc->GetArrayFromAccArray($dbw->GetSummRightTable($userdata[0]['id'], 'add'),'unnest');
-		$delete=$strc->GetArrayFromAccArray($dbw->GetSummRightTable($userdata[0]['id'], 'delete'),'unnest');
+		$read=StringConverter::GetArrayFromAccArray($dbw->GetSummRightTable($userdata[0]['id'], 'read'),'unnest');
+		$add=StringConverter::GetArrayFromAccArray($dbw->GetSummRightTable($userdata[0]['id'], 'add'),'unnest');
+		$delete=StringConverter::GetArrayFromAccArray($dbw->GetSummRightTable($userdata[0]['id'], 'delete'),'unnest');
 		
 		return $this->ConstructRightCurrentGroup($names_rights, $read, $add, $delete);
 	}
 	//Блок с добавлением групп пользователю
-	private function ConstructCurrentUserGroups($userdata,DBWorker $dbw,Parser $parser,StringConverter $strc){
+	private function ConstructCurrentUserGroups($userdata,DBWorker $dbw){
 		$groups_user_in=$dbw->GetGroupsUserIn($userdata[0]['id']);
 		
-		$content='';
+		$content='<table>';
 		for($i=0;$i<count($groups_user_in);$i++){
-			$content=$content.'<div>'.$strc->ConvertTo1251($groups_user_in[$i]['name']).'</div>';
+			if(count($groups_user_in[0])==0)
+				break;
+			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($groups_user_in[$i]['name']).'</td><td><img src="images/minus.png"><td></tr>';
 		}
+		$content=$content.'</table>';
+		
 		$labels=array(
 				'GROUPS'=>$content,
-				'GROUPS-SELECTOR'=>$this->ConstructCurrentUserGroupSelector($userdata, $dbw,$strc)
+				'GROUPS-SELECTOR'=>$this->ConstructCurrentUserGroupSelector($userdata, $dbw)
 		);
-		return $parser->TemplateParse('lkgroups.template.html', $labels);
+		return Parser::TemplateParse('lkgroups.template.html', $labels);
 	}
-	private function ConstructCurrentUserGroupSelector($userdata,DBWorker $dbw,StringConverter $strc){
+	private function ConstructCurrentUserGroupSelector($userdata,DBWorker $dbw){
 		$grops_user_not_in=$dbw->GetGroupsUserNotIn($userdata[0]['id']);
 		
 		$content='<select>';
 		for($i=0;$i<count($grops_user_not_in);$i++){
-			$content=$content.'<option>'.$strc->ConvertTo1251($grops_user_not_in[$i]['name']).'</option>';
+			$content=$content.'<option>'.StringConverter::ConvertTo1251($grops_user_not_in[$i]['name']).'</option>';
 		}
 		$content=$content.'</select>';
 		return $content;
 	}
 	//таблицу с информацией о пользователе
-	private function ConstructUserTable(array $userdata,Parser $parser,StringConverter $strc){
+	private function ConstructUserTable(array $userdata){
 		if($userdata[0]['who_reg']==null)
 			$userdata[0]['who_reg']='???';
 		else {
@@ -305,13 +432,13 @@ class HTMLConstructor{
 			$userdata[0]['who_reg']=$reg_user[0]['login'];
 		}
 		$table_labels=array(
-				'LK-LOGIN'=>$strc->ConvertTo1251($userdata[0]['login']),
-				'LK-NAME'=>$strc->ConvertTo1251($userdata[0]['name']).' '.$strc->ConvertTo1251($userdata[0]['surname']),
+				'LK-LOGIN'=>StringConverter::ConvertTo1251($userdata[0]['login']),
+				'LK-NAME'=>StringConverter::ConvertTo1251($userdata[0]['name']).' '.StringConverter::ConvertTo1251($userdata[0]['surname']),
 				'LK-DATE'=>$userdata[0]['reg_date'],
-				'LK-REGUSER'=>$strc->ConvertTo1251($userdata[0]['who_reg']),
-				'LK-ROLE'=>$strc->ConvertTo1251($userdata[0]['role_name'])
+				'LK-REGUSER'=>StringConverter::ConvertTo1251($userdata[0]['who_reg']),
+				'LK-ROLE'=>StringConverter::ConvertTo1251($userdata[0]['role_name'])
 		);
-		return $parser->TemplateParse('lktable.template.html', $table_labels);
+		return Parser::TemplateParse('lktable.template.html', $table_labels);
 	}
 	
 }

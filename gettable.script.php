@@ -2,6 +2,7 @@
 
 include('classes/dbworker.class.php');
 include('classes/htmlconstructor.class.php');
+include('classes/stringconverter.class.php');
 
 if((isset($_POST['t_name']) and isset($_POST['p_number']) and isset($_POST['offset'])) or isset($_POST['inpage'])){
 	

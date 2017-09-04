@@ -9,7 +9,6 @@
 	
 	$dbw=new DBWorker();
 	$dbw->ConnectToPostgreSQL();
-	$strc=new StringConverter();
 	$sw=new SecurityWorker();
 	
 	$dbw->SetUserData();
@@ -39,9 +38,9 @@
 			
 				$res=$dbw->AddGroup(
 					$name,
-					$strc->ConvertToPostgreString($read_list),
-					$strc->ConvertToPostgreString($add_list),
-					$strc->ConvertToPostgreString($delete_list)
+					StringConverter::ConvertToPostgreString($read_list),
+					StringConverter::ConvertToPostgreString($add_list),
+					StringConverter::ConvertToPostgreString($delete_list)
 				);
 				
 				echo true;			

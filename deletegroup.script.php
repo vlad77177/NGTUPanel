@@ -6,7 +6,6 @@
 	
 	$dbw=new DBWorker();
 	$dbw->ConnectToPostgreSQL();
-	$strc=new StringConverter();
 	
 	$dbw->SetUserData();
 	

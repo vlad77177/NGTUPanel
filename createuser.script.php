@@ -5,7 +5,6 @@
 	include('classes/stringconverter.class.php');
 	
 	$dbw=new DBWorker();
-	$strc=new StringConverter();
 	
 	if($dbw->CheckUserLog()){
 		

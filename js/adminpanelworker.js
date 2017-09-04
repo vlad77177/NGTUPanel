@@ -1,3 +1,9 @@
+/*
+ * 	Задачи: 
+ * 		1. Потом обязательно навесить все события на JS, а не в коде php
+ * 		2. Проверить, мб переписать где надо POST запросы, использовать GET и DELETE
+ */
+
 var color='#12de2c'; //зеленый
 var color_yellow='#ffff00'; 
 var color_white='#ffffff'; 
@@ -11,8 +17,9 @@ var currentUserLogin=null;
 var right_matrix=null; //права группы(новой)
 var right_current_matrix=null; //выбранной группы
 var right_current_matrix_new=null; //новые значения
-var right_user_matrix=null;
-var right_user_matrix_new=null;
+
+var right_user_matrix=null;	// отдельные права юзера
+var right_user_matrix_new=null;	//у и новые соответственно
 
 var gname_min=3;
 var gname_max=30;
@@ -89,6 +96,17 @@ function getcurrentuserinfo(login){
 				currentElementUserList.css('color',color);
 			}
 			
+			//навешиваем события удаления группы у пользователя
+			var table=$('#div-admusermain-current-user-info-groups div:eq(1) table');
+			
+			for(var i=0;i<$(table).find('tr').length;i++){
+				var row=$(table).find('tr:eq('+i+')');
+				$(row).find('td:eq(1)').click({name:$(row).find('td:eq(0)').text()},function(e){
+					userdropgroup(e.data.name);
+				});
+			}
+			
+			/*
 			right_user_matrix=new Array();
 			setMatrix(right_user_matrix,$('#div-admpusermain-current-user-rights table'),'change',0);
 			
@@ -104,8 +122,9 @@ function getcurrentuserinfo(login){
 						//drawRightChanges(right_current_matrix,right_current_matrix_new);
 					});
 				}
-			}
-
+			}*/
+			
+			//пока без специальных прав, отложено, мб потом сделаю
 		}
 	});
 }
@@ -138,6 +157,19 @@ function deletegroup(name){
 				getcontent(2);
 			else
 				alert(result);
+		}
+	});
+}
+
+function userdropgroup(name){
+	$.ajax({
+		url:'dropgroup.script.php',
+		type:'POST',
+		data:{gname:name,username:currentUserLogin},
+		
+		success:function(result){
+			if(result==true)
+				getcurrentuserinfo(currentUserLogin);
 		}
 	});
 }

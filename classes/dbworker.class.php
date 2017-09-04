@@ -189,8 +189,87 @@ class DBWorker{
 		return pg_fetch_all(pg_query($this->connection_postgre,
 				'DELETE FROM groups WHERE name=\''.$gname.'\''));
 	}
+	public function DropUserGroup($gname,$userdata){
+		return $result=pg_query($this->connection_postgre,
+				'UPDATE users SET groups=array_remove(users.groups,(SELECT id FROM groups WHERE name=\''.$gname.'\')) WHERE id='.$userdata[0]['id'].'');
+	}
 	public function UpdateGroup($gname,$read,$add,$delete){
 		return $result=pg_query($this->connection_postgre,
 				'UPDATE groups SET read=\''.$read.'\', add=\''.$add.'\', delete=\''.$delete.'\' WHERE name=\''.$gname.'\'');
+	}
+	public function GetAddedPatterns($pname=null){
+		if($pname==null){
+			return pg_fetch_all(pg_query($this->connection_postgre,
+					'SELECT * FROM data_patterns'));
+		}
+		else{
+			return pg_fetch_all(pg_query($this->connection_postgre,
+					'SELECT * FROM data_patterns WHERE table_name=\''.$pname.'\''));
+		}
+	}
+	public function GetLink($id){
+		return pg_fetch_all(pg_query($this->connection_postgre,
+				'SELECT * FROM links WHERE id='.$id.''));
+	}
+	public function GetLinkByName($name){
+		return pg_fetch_all(pg_query($this->connection_postgre,
+				'SELECT * FROM links WHERE table_name=\''.$name.'\''));
+	}
+	public function GetSomeDataFromTable($tablename){
+		$q='SELECT * FROM '.$tablename.'';
+		return pg_fetch_all(pg_query($this->connection_ngtu,
+				$q));
+	}
+	public function GetPaternByName($name,$t_name=false){
+		if($t_name==false)
+			return pg_fetch_all(pg_query($this->connection_postgre,
+					'SELECT * FROM data_patterns WHERE data_name=\''.$name.'\''));
+		else if($t_name==true)
+			return pg_fetch_all(pg_query($this->connection_postgre,
+					'SELECT * FROM data_patterns WHERE table_name=\''.$name.'\''));
+	}
+	public function AddData($tname,$data,$ct,$col_name='name',$data_name='value',$return=null){
+		$q='INSERT INTO '.$tname.'(';
+		for($i=0;$i<count($data);$i++){
+			$q=$q.$data[$i]->{$col_name};
+			if($i!=count($data)-1)
+				$q=$q.',';
+		}
+		$q=$q.') VALUES(';
+		echo $ct[$i];
+		for($i=0;$i<count($data);$i++){
+			if($ct[$i]==1 or $ct[$i]==3)
+				$q=$q.$data[$i]->{$data_name};
+			else 
+				$q=$q.'\''.$data[$i]->{$data_name}.'\'';
+			if($i!=count($data)-1)
+				$q=$q.',';
+		}
+		$q=$q.')';
+		
+		if($return!=null){
+			$q=$q.' RETURNING '.$return.'';
+		}
+		
+		echo $q;
+		
+		return $result=pg_query($this->connection_ngtu,$q);
+		//return $result=pg_query($this->connection_ngtu,'SELECT * FROM sotr');
+	}
+	public function AddRow($table,$data,$column){
+		return $result=pg_query($this->connection_ngtu,
+				'INSERT INTO '.$table.'('.$column.') VALUES('.$data.')');
+	}
+	public function FindDataFromNGTU($table,$column,$data,$flag=false){
+		if($flag==false){
+			echo 'SELECT * FROM '.$table.' WHERE '.$column.'='.$data.'';
+			return $result=pg_fetch_all(pg_query($this->connection_ngtu,
+					'SELECT * FROM '.$table.' WHERE '.$column.'='.$data.''));
+		}
+		else{
+			echo 'SELECT * FROM '.$table.' WHERE '.$column.'=\''.$data.'\'';
+			return $result=pg_fetch_all(pg_query($this->connection_ngtu,
+					'SELECT * FROM '.$table.' WHERE '.$column.'=\''.$data.'\''));
+		}
 	}
 }

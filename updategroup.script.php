@@ -6,7 +6,6 @@
 	
 	$dbw=new DBWorker();
 	$dbw->ConnectToPostgreSQL();
-	$strc=new StringConverter();
 	
 	$dbw->SetUserData();
 	
@@ -31,9 +30,9 @@
 			
 			$dbw->UpdateGroup(
 					$_POST['gname'], 
-					$strc->ConvertToPostgreString($read_list), 
-					$strc->ConvertToPostgreString($add_list), 
-					$strc->ConvertToPostgreString($delete_list)
+					StringConverter::ConvertToPostgreString($read_list), 
+					StringConverter::ConvertToPostgreString($add_list), 
+					StringConverter::ConvertToPostgreString($delete_list)
 			);
 			
 			echo true;

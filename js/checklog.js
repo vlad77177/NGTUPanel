@@ -1,8 +1,11 @@
 $(document).ready(function() {
-	
 	$(function(){
-        $(this).on('submit', checklog);
-    });
+        $('#div-logging').find('input[name="submit"]').click(function(e){
+        	alert('запуск');
+        	checklog(e);
+        })
+        
+});
 	
 	function checklog(e){
 		var data=$('form').serialize();

@@ -7,11 +7,11 @@ class Parser
     ** @param array $labels массив меток и их значений
     ** @return text возвращает собранную страницу
     */
-    public function TemplateParse($way, $labels){
+    public static function TemplateParse($way, $labels){
         // Получаем содержимое файла шаблона
-        $cont = $this->GetContent($way);
+        $cont = Parser::GetContent($way);
         // Функция грамматического разбора шаблона
-        $cont = $this->LabelsReplace($cont, $labels);
+        $cont = Parser::LabelsReplace($cont, $labels);
         // Возвращаем собранную страницу
         return $cont;
     }
@@ -20,9 +20,9 @@ class Parser
     ** @param path $way относительный путь к шаблону
     ** @return text возвращает шаблон
     */
-    public function GetTemplateContent($way) {
+    private static function GetTemplateContent($way) {
         // Простое получение шаблона
-        return $this->GetContent($way);
+        return Parser::GetContent($way);
     }
     
     /* Метод замены меток значениямм.
@@ -30,7 +30,7 @@ class Parser
     ** @param array $labels массив меток и их значений
     ** @return text возвращает шаблон
     */
-    public function LabelsReplace($cont, $labels) {
+    private static function LabelsReplace($cont, $labels) {
         // Перебор
         foreach ( $labels as $key => $val ) {
             // Замена метки её значением.
@@ -44,7 +44,7 @@ class Parser
     ** @param path @way относительный путь к шаблону
     ** @return text возвращает шаблон
     */
-    public function GetContent($way) {
+    private static function GetContent($way) {
         // Использование стандартной php ф-и.
         return file_get_contents($way);
     }
@@ -54,7 +54,7 @@ class Parser
     ** @param bool $utf8 флаг вывода в кирилической кодировке
     */
     
-    public function PageOut($page, $utf8=false) {
+    public static function PageOut($page, $utf8=false) {
         // Выводить в кирилице?
         if( $utf8 ) {
             // Да. Перобразование с cp1251 в utf8. Вывод.

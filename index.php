@@ -15,8 +15,7 @@
 	//Подключение к базе данных
 	$DBW->ConnectToPostgreSQL('localhost', '5432', 'postgres', 'postgres','1111');
 	$DBW->ConnectToPostgreNGTU('localhost', '5432', 'ngtu', 'postgres', '1111');
- 
-	$Parser = new Parser();
+	
 	//Проверка сессии
 	if($DBW->CheckUserLog()==false){
 		//Если юзер не залогинился, то парсим страницу с логином
@@ -41,23 +40,23 @@
 		$userdata_labels=array(
 				'UMW-AVATAR'=>$htmlc->ConstructUMWAvatar($userdata[0]['avatar']),
 				'UMW-LOGIN'=>$userdata[0]['login'],
-				'UMW-NAME'=>$strc->ConvertTo1251($userdata[0]['name']).' '.$strc->ConvertTo1251($userdata[0]['surname']),
-				'UMW-ROLE'=>$strc->ConvertTo1251($userdata[0]['role_name']),
+				'UMW-NAME'=>StringConverter::ConvertTo1251($userdata[0]['name']).' '.StringConverter::ConvertTo1251($userdata[0]['surname']),
+				'UMW-ROLE'=>StringConverter::ConvertTo1251($userdata[0]['role_name']),
 		);
 		
 		
 		$header_labels=array(
-			'USER-MINI-WINDOW'=>$Parser->TemplateParse('userminiwindow.template.html', $userdata_labels),
+			'USER-MINI-WINDOW'=>Parser::TemplateParse('userminiwindow.template.html', $userdata_labels),
 		);
 		
 		$content_labels =array(
-				'HEADER' =>$Parser->TemplateParse('header.template.html', $header_labels),
-				'TOP-MENU'=>$htmlc->ConstructMenu(),
-				'CENTER'=>$htmlc->ConstructContent($_REQUEST['action'],$Parser,$DBW),
+				'HEADER' =>Parser::TemplateParse('header.template.html', $header_labels),
+				'TOP-MENU'=>$htmlc->ConstructMenu($DBW),
+				'CENTER'=>$htmlc->ConstructContent($_REQUEST['action'],$DBW),
 				'FOOTER'=>'Это футер',
 		);
 		
-		$content=$Parser->TemplateParse('content.template.html', $content_labels);
+		$content=Parser::TemplateParse('content.template.html', $content_labels);
 		
 		$labels = array(
 				'TITLE' => 'Панель управления',
@@ -67,8 +66,8 @@
 	}
 	
 	 
-	$page = $Parser->TemplateParse('template.html', $labels);
+	$page = Parser::TemplateParse('template.html', $labels);
 	 
-	$Parser->PageOut($page); 
+	Parser::PageOut($page); 
 
 ?>
