@@ -1,10 +1,7 @@
 <?php
 	session_start();
 	
-	include('classes/dbworker.class.php');
-	include('classes/htmlconstructor.class.php');
-	include('classes/stringconverter.class.php');
-	include('classes/securityworker.class.php');
+	include('includes.php');
 	
 	$dbw=new DBWorker();
 	$dbw->ConnectToPostgreSQL();

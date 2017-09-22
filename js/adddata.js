@@ -33,22 +33,22 @@ function addData(){
 	for(var i=0;i<$('#div-add-data-fields').find('table:eq(0) tr').length;i++){
 		var cell=$('#div-add-data-fields').find('table tr:eq('+i+') td:eq(1)');
 		if($(cell).find('input').length>0){
-			data[i]={"name":$(cell).find('input').attr('name'),"value":$(cell).find('input').val()};
+			data[i]={"column":$(cell).find('input').data('column'),"value":$(cell).find('input').val()};
 		}
 		else if($(cell).find('select').length>0){
-			if($(cell).find('select').data('method')=='def'){
-				data[i]={"name":$(cell).find('select').attr('name'),"value":$(cell).find('select option:selected').data('add')};
+			if($(cell).find('select').data('type')=='def'){
+				data[i]={"column":$(cell).find('select').data('column'),"value":$(cell).find('select option:selected').data('value')};
 			}
-			else if($(cell).find('select').data('method')=='multiple'){
+			else if($(cell).find('select').data('type')=='multiple'){
 				var selected=new Array();
 				for(var j=0;j<$(cell).find('select option:selected').length;j++){
-					selected[j]=$(cell).find('select option:selected:eq('+j+')').data('add');
+					selected[j]=$(cell).find('select option:selected:eq('+j+')').data('value');
 				}
-				data[i]={"name":$(cell).find('select').attr('name'),"value":selected};
+				data[i]={"column":$(cell).find('select').data('column'),"value":selected};
 			}
 		}
 		else if($(cell).find('div').length>0){
-			data[i]={"name":$(cell).find('div').attr('name'),"value":getDataFromList(cell),"create":true};
+			data[i]={"column":$(cell).find('div').data('column'),"value":getDataFromList(cell),"create":true};
 		}
 	}
 	
@@ -73,7 +73,7 @@ function getDataFromList(cell){
 		var ularr=new Array();
 		var ul=$(div).find('ul:eq('+j+')');
 		for(var k=0;k<$(ul).find('li').length;k++){
-			ularr[k]={"col":$(ul).find('li:eq('+k+')').data('col'),"add":$(ul).find('li:eq('+k+')').data('add')};
+			ularr[k]={"column":$(ul).find('li:eq('+k+')').data('column'),"value":$(ul).find('li:eq('+k+')').data('value')};
 		}
 		value[j]=ularr;
 	}
@@ -103,15 +103,15 @@ function constructNewBlock(blockname,method){
 				$(currentBlock).append('<button>Добавить данные</button>');
 				$(currentBlock).find('button').click(function(e){
 					alert('click');
-					var div=$('#div-add-data-fields table').find('div[name="'+blockname+'"]');
+					var div=$('#div-add-data-fields table').find('div[data-column="'+blockname+'"]');
 					var li='<ul>';
 					for(var i=0;i<$('#div-add-data-fields table:eq(1) tr').length;i++){
 						var td=$('#div-add-data-fields table:eq(1) tr:eq('+i+') td:eq(1)');
 						if($(td).find('input').length>0){
-							li=li+'<li data-col="'+$(td).find('input').attr('name')+'" data-add="'+$(td).find('input').val()+'">'+$(td).find('input').val()+'</li>';
+							li=li+'<li data-column="'+$(td).find('input').data('column')+'" data-value="'+$(td).find('input').val()+'">'+$(td).find('input').val()+'</li>';
 						}
 						else if($(td).find('select').length>0){
-							li=li+'<li data-col="'+$(td).find('select').attr('name')+'" data-add="'+$(td).find('select option:selected').data('add')+'">'+$(td).find('select option:selected').val()+'</li>';
+							li=li+'<li data-column="'+$(td).find('select').data('column')+'" data-value="'+$(td).find('select option:selected').data('value')+'">'+$(td).find('select option:selected').val()+'</li>';
 						}
 					}
 					li=li+'</ul>';

@@ -215,23 +215,29 @@ class DBWorker{
 		return pg_fetch_all(pg_query($this->connection_postgre,
 				'SELECT * FROM links WHERE table_name=\''.$name.'\''));
 	}
-	public function GetSomeDataFromTable($tablename){
+	public function GetSomeDataFromTable($tablename,$filt_col=null,$filt_val=null,$filt_type=null){
 		$q='SELECT * FROM '.$tablename.'';
+		if($filt_col!=null and $filt_val!=null){
+			$q=$q.' WHERE '.$filt_col.'=';
+			if($fil_type=='int'){
+				$q=$q.$filt_val;
+			}
+			else{
+				$q=$q.'\''.$filt_val.'\'';
+			}
+		}
 		return pg_fetch_all(pg_query($this->connection_ngtu,
 				$q));
 	}
-	public function GetPaternByName($name,$t_name=false){
-		if($t_name==false)
-			return pg_fetch_all(pg_query($this->connection_postgre,
-					'SELECT * FROM data_patterns WHERE data_name=\''.$name.'\''));
-		else if($t_name==true)
+	public function GetPaternByName($name){
 			return pg_fetch_all(pg_query($this->connection_postgre,
 					'SELECT * FROM data_patterns WHERE table_name=\''.$name.'\''));
 	}
-	public function AddData($tname,$data,$ct,$col_name='name',$data_name='value',$return=null){
+	/*
+	public function AddData($tname,$data,$ct,$return=null){
 		$q='INSERT INTO '.$tname.'(';
 		for($i=0;$i<count($data);$i++){
-			$q=$q.$data[$i]->{$col_name};
+			$q=$q.$data[$i]->{'column'};
 			if($i!=count($data)-1)
 				$q=$q.',';
 		}
@@ -239,9 +245,9 @@ class DBWorker{
 		echo $ct[$i];
 		for($i=0;$i<count($data);$i++){
 			if($ct[$i]==1 or $ct[$i]==3)
-				$q=$q.$data[$i]->{$data_name};
+				$q=$q.$data[$i]->{'value'};
 			else 
-				$q=$q.'\''.$data[$i]->{$data_name}.'\'';
+				$q=$q.'\''.$data[$i]->{'value'}.'\'';
 			if($i!=count($data)-1)
 				$q=$q.',';
 		}
@@ -254,7 +260,30 @@ class DBWorker{
 		echo $q;
 		
 		return $result=pg_query($this->connection_ngtu,$q);
-		//return $result=pg_query($this->connection_ngtu,'SELECT * FROM sotr');
+	}*/
+			
+	public function AddData($table,$columns,$values,$types,$return=null){
+		$q='INSERT INTO '.$table.'(';
+		for($i=0;$i<count($columns);$i++){
+			$q=$q.$columns[$i];
+			if($i!=count($columns)-1)
+				$q=$q.',';
+		}
+		$q=$q.') VALUES(';
+		for($i=0;$i<count($values);$i++){
+			if($types[$i]==1 or $types[$i]==3)
+				$q=$q.$values[$i];
+				else
+					$q=$q.'\''.$values[$i].'\'';
+					if($i!=count($values)-1)
+						$q=$q.',';
+		}
+		$q=$q.')';
+		if($return!=null){
+			$q=$q.' RETURNING '.$return.'';
+		}
+		//echo $q;
+		return $result=pg_query($this->connection_ngtu,$q);
 	}
 	public function AddRow($table,$data,$column){
 		return $result=pg_query($this->connection_ngtu,

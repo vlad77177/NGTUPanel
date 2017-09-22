@@ -1,4 +1,5 @@
 <?php
+/* На удаление пользователя из группы */
 session_start();
 
 include('classes/dbworker.class.php');

@@ -1,7 +1,6 @@
 $(document).ready(function() {
 	$(function(){
         $('#div-logging').find('input[name="submit"]').click(function(e){
-        	alert('запуск');
         	checklog(e);
         })
         
@@ -20,8 +19,7 @@ $(document).ready(function() {
 	        		alert('Ошибка! Пользователь не найден!');
 	        	}
 	        	else{
-	        		alert("Пользователь обнаружен!");
-	        		document.location.href('index.php');
+	        		document.location.href('index.php?action=1');
 	        	}
 	        },
 	    	error: function(jqXHR,exception){

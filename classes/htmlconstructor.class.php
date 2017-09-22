@@ -31,6 +31,7 @@ class HTMLConstructor{
 		//По реквесту
 		switch($action){
 			case 1:{
+				$content=$this->ConstructSearchContent($dbworker);
 				break;
 			}
 			case 2:{	
@@ -48,10 +49,99 @@ class HTMLConstructor{
 				break;
 			}
 			default:{
-				return 'Стартовая страница';
+				if($_REQUEST['table']!=null and $_REQUEST['itemcolname']!=null and $_REQUEST['itemid']!=null){
+					$data=$dbworker->GetSomeDataFromTable($_REQUEST['table'],$_REQUEST['itemcolname'],$_REQUEST['itenid'],'int');
+					$dp=$dbworker->GetPaternByName($_REQUEST['table']);
+					$content='<div class="white-block" style="width:100%">'.$this->ConstructResultBlock($data[0], $dp, $dbworker).'</div>';
+				}
 			}
 		}
 		
+		return $content;
+	}
+	
+	private function ConstructSearchContent(DBWorker $dbw){
+		$search_labels=array(
+				'SEARCH-ITEM-SELECTOR'=>$this->ConstructSearchItemsSelector($dbw),
+		);
+		return Parser::TemplateParse('search.template.html', $search_labels);
+	}
+	
+	public function ConstructResultBlock($result,$data_pattern,DBWorker $dbw){
+		$block_labels=array(
+				'RESULT-NAME'=>StringConverter::ConvertTo1251($data_pattern[0]['data_name']),
+				'RESULT-INFO'=>$this->ConstructResultInfo($result, $data_pattern,$dbw)
+		);
+		return Parser::TemplateParse('resultblock.template.html', $block_labels);
+	}
+	
+	private function ConstructResultInfo($result,$data_pattern,DBWorker $dbw){
+		$content='<table>';
+		
+		$data_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['data_names']);
+		$col_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_names']);
+		$links=StringConverter::GetArrayFromPostgreString($data_pattern[0]['link_id']);
+		$links_type=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_types']);
+		
+		for($i=0;$i<$data_pattern[0]['cell_count'];$i++){
+			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($data_names[$i]).':</td>';
+	
+			if($links[$i]==-1)
+				$content=$content.'<td>'.StringConverter::ConvertTo1251($result[$col_names[$i]]).'</td></tr>';
+			else{
+				//если ссылка
+				if($links_type[$i]==3){
+					//если одиночная ссылка
+					$link=$dbw->GetLink($links[$i]);//получил ссылку
+					$displayed=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);
+					$data=$dbw->GetSomeDataFromTable($link[0]['table_name'],$link[0]['col_created_data'],$result[$col_names[$i]],'int');
+					//получил нужную строку
+					
+					$content=$content.'<td><a href="index.php?table='
+							.$link[0]['table_name'].'&itemcolname='
+							.$link[0]['col_created_data'].'&itemid='
+							.$data[0][$link[0]['col_created_data']].'">';
+					//выше ссылка для a
+					
+					for($j=0;$j<count($displayed);$j++){
+						$content=$content.StringConverter::ConvertTo1251($data[0][$displayed[$j]]);
+						if($j<count($displayed)-1)
+							$content=$content.' ';
+					}
+					$content=$content.'</a></td></tr>';
+				}
+				else if($links_type[$i]==5){
+					//если массив ссылок
+					$link=$dbw->GetLink($links[$i]);
+					$res_array=StringConverter::GetArrayFromPostgreString($result[$col_names[$i]]);
+					$displayed=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);
+					$content=$content.'<td>';
+					for($k=0;$k<count($res_array);$k++){
+						$data=$dbw->GetSomeDataFromTable($link[0]['table_name'],$link[0]['col_created_data'],$res_array[$k],'int');
+						for($j=0;$j<count($displayed);$j++){
+							$content=$content.StringConverter::ConvertTo1251($data[0][$displayed[$j]]);
+							if($j<count($displayed)-1)
+								$content=$content.' ';
+						}
+						if($k<count($res_array)-1)
+							$content=$content.',';
+					}
+					$content=$content.'</td></tr>';
+				}
+			}
+			
+		}
+		return $content=$content.'</table>';
+	}
+	
+	private function ConstructSearchItemsSelector(DBWorker $dbw){
+		$content='<select>';
+		$data_patterns=$dbw->GetAddedPatterns();
+		$user=$dbw->GetUserData();
+		for($i=0;$i<count($data_patterns);$i++){
+			$content=$content.'<option data-name="'.StringConverter::ConvertTo1251($data_patterns[$i]['table_name']).'">'.StringConverter::ConvertTo1251($data_patterns[$i]['data_name']).'</option>';
+		}
+		$content=$content.'</select>';
 		return $content;
 	}
 	
@@ -74,9 +164,9 @@ class HTMLConstructor{
 	
 	public function ConstructAddDataBlock($patt_name,DBWorker $dbw){
 		$user=$dbw->GetUserData();
-		$data_pattern=$dbw->GetAddedPatterns($patt_name);
+		$pattern=new DataPattern($patt_name, $dbw);
 		
-		if(SecurityWorker::CheckTheRightOfAdd($user, $data_pattern, $dbw)==false){
+		if(SecurityWorker::CheckTheRightOfAdd($user, $pattern, $dbw)==false){
 			return 'У вас нет прав на создание записи';
 		}
 		
@@ -92,33 +182,34 @@ class HTMLConstructor{
 		 * $col_types - типы данных(числовые, строчные, ссылка(внешний ключ) или список(массив внешних ключей))
 		 */
 		
+		/*
 		$right_id=StringConverter::GetArrayFromPostgreString($data_pattern[0]['right_id']);
 		$data_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['data_names']);
 		$col_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_names']);
 		$link_id=StringConverter::GetArrayFromPostgreString($data_pattern[0]['link_id']);
 		$col_types=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_types']);
-		$needed_right=StringConverter::GetArrayFromPostgreString($data_pattern[0]['needed_right']);
+		$needed_right=StringConverter::GetArrayFromPostgreString($data_pattern[0]['needed_right']);*/
 		
-		for($i=0;$i<$data_pattern[0]['cell_count'];$i++){
+		for($i=0;$i<$pattern->GetCellcount();$i++){
 			
-			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($data_names[$i]).':</td><td>';
+			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($pattern->GetDatanames($i)).':</td><td>';
 			
-			switch($col_types[$i]){
+			switch($pattern->GetColtypes($i)){
 				case 1:{
-					$content=$content.'<input type="text" data-display="integer" name="'.$col_names[$i].'">';
+					$content=$content.'<input type="text" data-display="integer" data-column="'.$pattern->GetColnames($i).'">';
 					break;
 				}
 				case 2:{
-					$content=$content.'<input type="text" data-display="string" name="'.$col_names[$i].'">';
+					$content=$content.'<input type="text" data-display="string" data-column="'.$pattern->GetColnames($i).'">';
 					break;
 				}
 				case 3:{
-					$link=$dbw->GetLink($link_id[$i]);//сслыка
-					$display_column=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);//колонки, которые нужно отобразить в option
-					$data=$dbw->GetSomeDataFromTable($link[0]['table_name']);//все данные из нужной таблицы
-					$content=$content.'<select name="'.$col_names[$i].'" data-method="def">';
+					$link=$pattern->GetLink($i);//ссылка
+					$display_column=$link->GetColDisplayData();//колонки, которые нужно отобразить в option
+					$data=$dbw->GetSomeDataFromTable($link->GetTablename());//все данные из нужной таблицы
+					$content=$content.'<select data-column="'.$pattern->GetColnames($i).'" data-type="def">';
 					for($j=0;$j<count($data);$j++){
-						$content=$content.'<option data-add="'.$data[$j][$link[0]['col_created_data']].'">';
+						$content=$content.'<option data-value="'.$data[$j][$link->GetColcreatedData()].'">';
 						for($k=0;$k<count($display_column);$k++){
 							$content=$content.StringConverter::ConvertTo1251($data[$j][$display_column[$k]]).' ';
 						}
@@ -128,12 +219,12 @@ class HTMLConstructor{
 					break;
 				}
 				case 4:{
-					$link=$dbw->GetLink($link_id[$i]);//сслыка
-					$display_column=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);//колонки, которые нужно отобразить в option
-					$data=$dbw->GetSomeDataFromTable($link[0]['table_name']);//все данные из нужной таблицы
-					$content=$content.'<select multiple size="3" name="'.$link[0]['table_name'].'" data-method="multiple">';
+					$link=$pattern->GetLink($i);//сслыка
+					$display_column=$link->GetColDisplayData();//колонки, которые нужно отобразить в option
+					$data=$dbw->GetSomeDataFromTable($link->GetTableName());//все данные из нужной таблицы
+					$content=$content.'<select multiple size="3" data-column="'.$link->GetTableName().'" data-type="multiple">';
 					for($j=0;$j<count($data);$j++){
-						$content=$content.'<option data-add="'.$data[$j][$link[0]['col_created_data']].'">';
+						$content=$content.'<option data-column="'.$data[$j][$link->GetColCreatedData()].'">';
 						for($k=0;$k<count($display_column);$k++){
 							$content=$content.StringConverter::ConvertTo1251($data[$j][$display_column[$k]]).' ';
 						}
@@ -143,10 +234,10 @@ class HTMLConstructor{
 					break;
 				}
 				case 5:{
-					$link=$dbw->GetLink($link_id[$i]);
-					$display_column=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);//колонки, которые нужно отобразить в option
-					$data=$dbw->GetSomeDataFromTable($link[0]['table_name']);//все данные из нужной таблицы
-					$content=$content.'<div name="'.$link[0]['table_name'].'">';
+					$link=$pattern->GetLink($i);
+					$display_column=$link->GetColDisplayData();//колонки, которые нужно отобразить в option
+					$data=$dbw->GetSomeDataFromTable($link->GetTableName());//все данные из нужной таблицы
+					$content=$content.'<div data-column="'.$link->GetTableName().'">';
 					$content=$content.'</div>';
 					break;
 				}
@@ -154,15 +245,15 @@ class HTMLConstructor{
 			
 			$content=$content.'</td><td>';
 			
-			switch($col_types[$i]){
+			switch($pattern->GetColtypes($i)){
 				case 3;
 				case 4;
-					$link=$dbw->GetLink($link_id[$i]);
-					if($link[0]['created_new']=='t')
-						$content=$content.'<button name="'.$link[0]['table_name'].'" data-method="create">Создать</button>';
+					$link=$pattern->GetLink($i);
+					if($link->CreateNew()=='t')
+						$content=$content.'<button name="'.$link->GetTableName().'" data-method="create">Создать</button>';
 					break;
 				case 5:
-					$content=$content.'<button name="'.$link[0]['table_name'].'" data-method="add">Добавить</button>';
+					$content=$content.'<button name="'.$link->GetTableName().'" data-method="add">Добавить</button>';
 					break;
 			}
 			

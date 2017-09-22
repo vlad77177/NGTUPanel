@@ -429,3 +429,46 @@ footer{
 	width:1.5vw;
 	height:1.5vw;
 }
+
+/* Поиск */
+
+#div-search-content{
+	display:flex;
+	flex-direction:row;
+	justify-content:space-between;
+	width:100%;
+}
+#div-search-filters{
+	width:40vw;
+}
+#div-search-label{
+	margin:20px 20px 20px 20px;
+	border-bottom:1px solid #bbbbbb;
+}
+#div-search-item-selector{
+	margin: 0px 20px 20px 20px;
+}
+#div-search-data{
+	margin-left:20px;
+	width:100%;
+}
+
+/* Блок поиска */
+
+.result-block{
+	margin:0px 20px 20px 20px;
+	display:flex;
+	flex-direction:column;
+	width:100%;
+	border:1px solid #bbbbbb;
+}
+.result-block:first-child{
+	margin-top:20px;
+}
+.result-name{
+	margin:20px 20px 20px 20px;
+}
+.result-info{
+	display:flex;
+	flex-direction:column;
+}
