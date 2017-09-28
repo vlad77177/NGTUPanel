@@ -42,9 +42,9 @@ function addData(){
 			else if($(cell).find('select').data('type')=='multiple'){
 				var selected=new Array();
 				for(var j=0;j<$(cell).find('select option:selected').length;j++){
-					selected[j]=$(cell).find('select option:selected:eq('+j+')').data('value');
+					selected[j]=$(cell).find('select option:selected:eq('+j+')').data('column');
 				}
-				data[i]={"column":$(cell).find('select').data('column'),"value":selected};
+				data[i]={"column":$(cell).find('select').data('column'),"value":JSON.stringify(selected)};
 			}
 		}
 		else if($(cell).find('div').length>0){

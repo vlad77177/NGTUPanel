@@ -6,6 +6,7 @@
 		public static function ConvertToUTF8($str){
 			return iconv('windows-1251','utf-8',$str);
 		}
+		//преобразуем массив в строку постгрес для хранения
 		public static function ConvertToPostgreString($arr){
 			$str='{';
 			for($i=0;$i<count($arr);$i++){

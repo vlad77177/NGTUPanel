@@ -1,10 +1,12 @@
 <?php
+/* класс проверки безопасности и прочего */
 	class SecurityWorker{
 		public static function CheckInsertString($str){
 			return pg_escape_string($str);
 		}
-		
+		/* проверка на возможность добавить данные */
 		public static function CheckTheRightOfAdd($user,DataPattern $pattern,DBWorker $dbw){
+			//если пользователь, то проверю есть ли право на добавление
 			if($user[0]['user_role']==3){
 				$user_groups=$dbw->GetGroupsUserIn($user[0]['id']);
 				for($i=0;$i<count($user_groups);$i++){
@@ -19,6 +21,7 @@
 			}
 			else return true;
 		}
+		/* логично нужны функции на проверку чтения и удаления */
 		
 	}
 ?>

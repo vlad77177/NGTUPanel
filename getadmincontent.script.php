@@ -2,11 +2,7 @@
 
 	session_start();
 	
-	include('classes/dbworker.class.php');
-	include('classes/htmlconstructor.class.php');
-	include('classes/stringconverter.class.php');
-	include('classes/parser.class.php');
-	include('a.charset.php');
+	include('includes.php');
 	
 	if(isset($_SESSION['login']) and isset($_SESSION['password'])){
 		

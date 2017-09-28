@@ -13,7 +13,7 @@
 		$dbw->ConnectToPostgreNGTU();
 		$userdata=$dbw->GetUserData();
 		
-		$item=new Item($_POST['tablename'], $_POST['tdata']);
+		$item=new Item(new ItemJSONBuilder($_POST['tablename'],$_POST['tdata']));
 		$pattern=new DataPattern($item->GetTable(), $dbw);	
 		
 		if(SecurityWorker::CheckTheRightOfAdd($dbw->GetUserData(),$pattern,$dbw)==true){

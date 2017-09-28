@@ -100,6 +100,25 @@ class DBWorker{
 			return false;
 	}
 	
+	public function GetNGTUTableRows($table,$condition_columns=null,$condition_values=null,$condition_types=null,$offset_limit=null){
+		$q='SELECT * FROM '.$table;
+		if(is_array($condition_columns) and is_array($condition_values) and is_array($condition_types)){
+			$q=$q.' WHERE';
+			for($i=0;$i<count($condition_columns);$i++){
+				$q=$q.' '.$condition_columns[$i].'=';
+				if($condition_types[$i]=='int'){
+					$q=$q.$condition_values[$i];
+				}
+				else{
+					$q=$q.'\''.$condition_values[$i].'\'';
+				}
+				if($i<count($condition_columns)-1)
+					$q=$q.' AND';
+			}
+		}
+		return pg_fetch_all(pg_query($this->connection_ngtu,$q));
+	}
+	
 	public function GetTableNames(){
 		$p='public';
 		$result=pg_query($this->connection_ngtu,

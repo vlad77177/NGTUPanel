@@ -2,8 +2,7 @@
 /* На удаление пользователя из группы */
 session_start();
 
-include('classes/dbworker.class.php');
-include('classes/stringconverter.class.php');
+include('includes.php');
 
 $dbw=new DBWorker();
 $dbw->ConnectToPostgreSQL();

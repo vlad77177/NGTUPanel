@@ -50,9 +50,10 @@ class HTMLConstructor{
 			}
 			default:{
 				if($_REQUEST['table']!=null and $_REQUEST['itemcolname']!=null and $_REQUEST['itemid']!=null){
-					$data=$dbworker->GetSomeDataFromTable($_REQUEST['table'],$_REQUEST['itemcolname'],$_REQUEST['itenid'],'int');
-					$dp=$dbworker->GetPaternByName($_REQUEST['table']);
-					$content='<div class="white-block" style="width:100%">'.$this->ConstructResultBlock($data[0], $dp, $dbworker).'</div>';
+					$pattern=new DataPattern($_REQUEST['table'], $dbworker);
+					$data=$dbworker->GetNGTUTableRows($pattern->GetTableName(),array($_REQUEST['itemcolname']),array($_REQUEST['itemid']),array('int'));
+					$item=new Item(new ItemResultBuilder($data[0], $pattern));
+					$content='<div class="white-block" style="width:100%">'.$this->ConstructResultBlock($item, $pattern, $dbworker).'</div>';
 				}
 			}
 		}
@@ -67,67 +68,72 @@ class HTMLConstructor{
 		return Parser::TemplateParse('search.template.html', $search_labels);
 	}
 	
-	public function ConstructResultBlock($result,$data_pattern,DBWorker $dbw){
+	public function ConstructResultBlock(Item $item,DataPattern $pattern,DBWorker $dbw){
 		$block_labels=array(
-				'RESULT-NAME'=>StringConverter::ConvertTo1251($data_pattern[0]['data_name']),
-				'RESULT-INFO'=>$this->ConstructResultInfo($result, $data_pattern,$dbw)
+				'RESULT-NAME'=>StringConverter::ConvertTo1251($pattern->GetName()),
+				'RESULT-INFO'=>$this->ConstructResultInfo($item, $pattern,$dbw)
 		);
 		return Parser::TemplateParse('resultblock.template.html', $block_labels);
 	}
 	
-	private function ConstructResultInfo($result,$data_pattern,DBWorker $dbw){
+	private function ConstructResultInfo(Item $item,DataPattern $pattern,DBWorker $dbw){
 		$content='<table>';
-		
-		$data_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['data_names']);
-		$col_names=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_names']);
-		$links=StringConverter::GetArrayFromPostgreString($data_pattern[0]['link_id']);
-		$links_type=StringConverter::GetArrayFromPostgreString($data_pattern[0]['col_types']);
-		
-		for($i=0;$i<$data_pattern[0]['cell_count'];$i++){
-			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($data_names[$i]).':</td>';
-	
-			if($links[$i]==-1)
-				$content=$content.'<td>'.StringConverter::ConvertTo1251($result[$col_names[$i]]).'</td></tr>';
+		for($i=0;$i<$pattern->GetCellcount();$i++){
+			$content=$content.'<tr><td>'.StringConverter::ConvertTo1251($pattern->GetDatanames($i)).':</td>';
+			$link=$pattern->GetLink($i);
+			if($link==null){
+				$content=$content.'<td>'.StringConverter::ConvertTo1251($item->GetValues($i)).'</td></tr>';
+			}
 			else{
 				//если ссылка
-				if($links_type[$i]==3){
+				if($pattern->GetColtypes($i)==3 or $pattern->GetColtypes($i)==5 or $pattern->GetColtypes($i)==4){
 					//если одиночная ссылка
-					$link=$dbw->GetLink($links[$i]);//получил ссылку
-					$displayed=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);
-					$data=$dbw->GetSomeDataFromTable($link[0]['table_name'],$link[0]['col_created_data'],$result[$col_names[$i]],'int');
-					//получил нужную строку
-					
-					$content=$content.'<td><a href="index.php?table='
-							.$link[0]['table_name'].'&itemcolname='
-							.$link[0]['col_created_data'].'&itemid='
-							.$data[0][$link[0]['col_created_data']].'">';
-					//выше ссылка для a
-					
-					for($j=0;$j<count($displayed);$j++){
-						$content=$content.StringConverter::ConvertTo1251($data[0][$displayed[$j]]);
-						if($j<count($displayed)-1)
-							$content=$content.' ';
+					$displayed=$link->GetColDisplayData();
+					$item_ids=array();
+					if($pattern->GetColtypes($i)==5 or $pattern->GetColtypes($i)==4){
+						$item_ids=StringConverter::GetArrayFromPostgreString($item->GetValues($i));
 					}
-					$content=$content.'</a></td></tr>';
-				}
-				else if($links_type[$i]==5){
-					//если массив ссылок
-					$link=$dbw->GetLink($links[$i]);
-					$res_array=StringConverter::GetArrayFromPostgreString($result[$col_names[$i]]);
-					$displayed=StringConverter::GetArrayFromPostgreString($link[0]['col_display_data']);
+					else{
+						$item_ids[0]=$item->GetValues($i);
+					}
 					$content=$content.'<td>';
-					for($k=0;$k<count($res_array);$k++){
-						$data=$dbw->GetSomeDataFromTable($link[0]['table_name'],$link[0]['col_created_data'],$res_array[$k],'int');
-						for($j=0;$j<count($displayed);$j++){
-							$content=$content.StringConverter::ConvertTo1251($data[0][$displayed[$j]]);
+					for($j=0;$j<count($item_ids);$j++){//т.к value может хранить массив ссылок, то сделаем и перечисление
+						$data=$dbw->GetSomeDataFromTable($link->GetTableName(),$link->GetColCreatedData(),$item_ids[$j],'int');
+						//получил нужную строку
+						
+						$content=$content.'<a href="index.php?table='
+								.$link->GetTableName().'&itemcolname='
+								.$link->GetColCreatedData().'&itemid='
+								.$data[0][$link->GetColCreatedData()].'">';
+						//выше ссылка для a
+						
+						for($k=0;$k<count($displayed);$k++){
+							$content=$content.StringConverter::ConvertTo1251($data[0][$displayed[$k]]);
+							if($k<count($displayed)-1)
+								$content=$content.' ';
+						}
+						$content=$content.'</a>';
+						if($j<count($item_ids)-1)
+							$content=$content.', ';
+					}
+					$content=$content.'</td></tr>';
+				}/*
+				else if($pattern->GetColtypes($i)==5){
+					//если массив ссылок
+					$item_array=StringConverter::GetArrayFromPostgreString($item->GetValues($i));//массив индексов
+					$content=$content.'<td>';
+					for($k=0;$k<count($item_array);$k++){//перечисление индексов
+						for($j=0;$j<count($item_array);$j++){
+							$data=$dbw->GetSomeDataFromTable($link->GetTableName(),$link->GetColCreatedData(),$item_array[$j],'int');
+							$content=$content.StringConverter::ConvertTo1251($data[0][$link->ColDisplayData($j)]);
 							if($j<count($displayed)-1)
 								$content=$content.' ';
 						}
-						if($k<count($res_array)-1)
+						if($k<count($item->GetValues($i))-1)
 							$content=$content.',';
 					}
 					$content=$content.'</td></tr>';
-				}
+				}*/
 			}
 			
 		}

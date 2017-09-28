@@ -1,7 +1,7 @@
 <?php
 	session_start();
 	
-	include('classes/dbworker.class.php');
+	include('includes.php');
 	
 	$dbw=new DBWorker();
 	$dbw->ConnectToPostgreSQL();

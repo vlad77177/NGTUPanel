@@ -1,10 +1,7 @@
 <?php
 	session_start();
 	
-	include('classes/dbworker.class.php');
-	include('classes/stringconverter.class.php');
-	include('classes/htmlconstructor.class.php');
-	include('classes/parser.class.php');
+	include('includes.php');
 	
 	$dbw=new DBWorker();
 	$dbw->ConnectToPostgreSQL();
@@ -16,13 +13,26 @@
 	
 	if($dbw->CheckUserLog()){
 		
+		$pattern=new DataPattern($_GET['pname'], $dbw);
+		$content='';
+		$result=$dbw->GetSomeDataFromTable($_GET['pname']);
+		for($i=0;$i<count($result);$i++){
+			//$content=$content.$htmlc->ConstructResultBlock($result[$i], $data_pattern,$dbw);
+			$content=$content.$htmlc->ConstructResultBlock(
+				new Item(new ItemResultBuilder($result[$i], $pattern)),
+				$pattern,
+				$dbw
+			);
+		}
+		echo $content;
+		/* на случай просерания полимеров
 		$data_pattern=$dbw->GetPaternByName($_GET['pname'],true);
 		$result=$dbw->GetSomeDataFromTable($_GET['pname']);
 		$content='';
 		for($i=0;$i<count($result);$i++){
 			$content=$content.$htmlc->ConstructResultBlock($result[$i], $data_pattern,$dbw);
 		}
-		echo $content;
+		echo $content;*/
 	}
 	else echo false;
 ?>

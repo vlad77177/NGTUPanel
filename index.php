@@ -1,10 +1,7 @@
 <?php 
 	session_start();
 	//Подключение классов
-	include('classes/parser.class.php');
-	include('classes/dbworker.class.php');
-	include('classes/htmlconstructor.class.php');
-	include('classes/stringconverter.class.php');
+	include('includes.php');
 	//Метки и основной контент
 	$labels;
 	$content;

@@ -2,7 +2,7 @@
 /* Скрипт на вход в систему */
 session_start();
 
-include('classes/dbworker.class.php');
+include('includes.php');
 
 if(isset($_POST['login']) and isset($_POST['password'])){
 
