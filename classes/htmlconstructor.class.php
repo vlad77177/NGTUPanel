@@ -98,7 +98,13 @@ class HTMLConstructor{
 					}
 					$content=$content.'<td>';
 					for($j=0;$j<count($item_ids);$j++){//т.к value может хранить массив ссылок, то сделаем и перечисление
-						$data=$dbw->GetSomeDataFromTable($link->GetTableName(),$link->GetColCreatedData(),$item_ids[$j],'int');
+						//$data=$dbw->GetSomeDataFromTable($link->GetTableName(),$link->GetColCreatedData(),$item_ids[$j],'int');
+						$data=$dbw->GetNGTUTableRows(
+							$link->GetTableName(),
+							array($link->GetColCreatedData()),
+							array($item_ids[$j]),
+							array('int')
+						);
 						//получил нужную строку
 						
 						$content=$content.'<a href="index.php?table='
@@ -212,7 +218,8 @@ class HTMLConstructor{
 				case 3:{
 					$link=$pattern->GetLink($i);//ссылка
 					$display_column=$link->GetColDisplayData();//колонки, которые нужно отобразить в option
-					$data=$dbw->GetSomeDataFromTable($link->GetTablename());//все данные из нужной таблицы
+					//$data=$dbw->GetSomeDataFromTable($link->GetTablename());//все данные из нужной таблицы
+					$data=$dbw->GetNGTUTableRows($link->GetTableName(),null,null,null);
 					$content=$content.'<select data-column="'.$pattern->GetColnames($i).'" data-type="def">';
 					for($j=0;$j<count($data);$j++){
 						$content=$content.'<option data-value="'.$data[$j][$link->GetColcreatedData()].'">';
@@ -306,7 +313,7 @@ class HTMLConstructor{
 	
 	function ConstructTableContent(DBWorker $dbw){
 		//Получаем имена всех таблиц
-		$table_names=$dbw->GetTableNames();
+		$table_names=$dbw->GetTableNames($dbw->GetNGTUConnection());
 		//Строим список		
 		$table_list=$this->ConstructTableList($table_names);
 		

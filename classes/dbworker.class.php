@@ -13,6 +13,7 @@ class DBWorker{
 	
 	private $userdata;
 	
+	//подключение к базе системы
 	public function ConnectToPostgreSQL($host='localhost',$port='5432',$dbname='postgres',$user='postgres',$password=1111){
 		
 		$connect_string='host='.$host.
@@ -27,7 +28,7 @@ class DBWorker{
 		
 		$this->postgre_name=$dbname;
 	}
-	
+	//подключение к базе НГТУ(только данные НГТУ)
 	public function ConnectToPostgreNGTU($host='localhost',$port='5432',$dbname='ngtu',$user='postgres',$password=1111){
 		
 		$connect_string='host='.$host.
@@ -46,21 +47,21 @@ class DBWorker{
 	public function GetPostgreConnection(){
 		return $this->connection_postgre;
 	}
-	
 	public function GetNGTUConnection(){
 		return $this->connection_ngtu;
 	}
 	
+	//поиск пользователя по логину и паролю
 	public function FindUser($login,$password){
 		return $result=pg_fetch_array(pg_query($this->connection_postgre,
 				'SELECT * FROM users WHERE login=\''.$login.'\' AND pass=\''.$password.'\''));
 	}
-	
+	//поиск пользователя по id
 	public function FingRegUser($id){
 		return $result=pg_fetch_all(pg_query($this->connection_postgre,
 				'SELECT * FROM users WHERE id=\''.$id.'\''));
 	}
-	
+	//установка данных пользователя в сессию
 	public function SetUserData($login=null,$password=null){
 		$l=$login;
 		$p=$password;
@@ -72,7 +73,7 @@ class DBWorker{
 				'SELECT * FROM users JOIN user_roles ON users.user_role=user_roles.id WHERE login=\''.$l.'\' AND pass=\''.$p.'\''
 				));
 	}
-	
+	//получение данных пользователя который сейчас в системе
 	public function GetUserData($login=null){
 		if($login==null)
 			return pg_fetch_all(pg_query($this->connection_postgre,
@@ -100,7 +101,7 @@ class DBWorker{
 			return false;
 	}
 	
-	public function GetNGTUTableRows($table,$condition_columns=null,$condition_values=null,$condition_types=null,$offset_limit=null){
+	public function GetNGTUTableRows($table,$condition_columns=null,$condition_values=null,$condition_types=null){
 		$q='SELECT * FROM '.$table;
 		if(is_array($condition_columns) and is_array($condition_values) and is_array($condition_types)){
 			$q=$q.' WHERE';
@@ -119,7 +120,7 @@ class DBWorker{
 		return pg_fetch_all(pg_query($this->connection_ngtu,$q));
 	}
 	
-	public function GetTableNames(){
+	public function GetTableNames($connection){
 		$p='public';
 		$result=pg_query($this->connection_ngtu,
 				'SELECT table_name FROM information_schema.tables WHERE table_schema=\''.$p.'\' ORDER BY table_name');
@@ -127,19 +128,19 @@ class DBWorker{
 		return pg_fetch_all($result);
 	}
 	
-	public function GetTableColumns($table_name){
+	public function GetTableColumns($connection,$table_name){
 		$p='public';
-		return $columns=pg_fetch_all(pg_query($this->connection_ngtu,
+		return $columns=pg_fetch_all(pg_query($connection,
 				'SELECT column_name FROM information_schema.columns WHERE table_name=\''.$table_name.'\' AND table_schema=\''.$p.'\''));
 	}
 	
-	public function GetTableData($table_name,$int_f,$int_l,$column){	
+	public function GetTableData($table_name,$int_f,$int_l){	
 		return pg_fetch_all(pg_query($this->connection_ngtu,
 				'SELECT * FROM '.$table_name.' OFFSET '.$int_f.' LIMIT '.$int_l.''));
 	}
 	
-	public function GetNumberRowsOfTable($table_name){
-		$result=pg_fetch_all(pg_query($this->connection_ngtu,
+	public function GetNumberRowsOfTable($connection,$table_name){
+		$result=pg_fetch_all(pg_query($connection,
 				'SELECT COUNT(*) FROM '.$table_name.''));
 		return $result[0]['count'];
 	}
@@ -162,8 +163,9 @@ class DBWorker{
 				'SELECT name FROM groups'));
 	}
 	public function GetGroupData($gname){
-		return $result=pg_fetch_all(pg_query($this->connection_postgre,
-				'SELECT * FROM groups WHERE name=\''.$gname.'\''));
+		$result=pg_fetch_all(pg_query($this->connection_postgre,
+			'SELECT * FROM groups WHERE name=\''.$gname.'\''));
+		return $result[0];
 	}
 	public function AddUser($data){
 		
@@ -180,9 +182,11 @@ class DBWorker{
 					.$data['groups'].'\')'
 				);
 	}
-	public function GetRoleID($role_name){
-		return $result=pg_fetch_all(pg_query($this->connection_postgre,
-				'SELECT id FROM user_roles WHERE role_name=\''.$role_name.'\''));
+	public function GetRoleData($role_name){
+		$result=pg_fetch_all(pg_query($this->connection_postgre,
+			'SELECT * FROM user_roles WHERE role_name=\''.$role_name.'\''));
+		return $result[0];
+		
 	}
 	public function GetAllUsersData(){
 		return pg_fetch_all(pg_query($this->connection_postgre,
@@ -227,13 +231,16 @@ class DBWorker{
 		}
 	}
 	public function GetLink($id){
-		return pg_fetch_all(pg_query($this->connection_postgre,
-				'SELECT * FROM links WHERE id='.$id.''));
+		$result=pg_fetch_all(pg_query($this->connection_postgre,
+			'SELECT * FROM links WHERE id='.$id.''));
+		return $result[0];
 	}
 	public function GetLinkByName($name){
-		return pg_fetch_all(pg_query($this->connection_postgre,
-				'SELECT * FROM links WHERE table_name=\''.$name.'\''));
+		$result=pg_fetch_all(pg_query($this->connection_postgre,
+			'SELECT * FROM links WHERE table_name=\''.$name.'\''));
+		return $result[0];
 	}
+	/*
 	public function GetSomeDataFromTable($tablename,$filt_col=null,$filt_val=null,$filt_type=null){
 		$q='SELECT * FROM '.$tablename.'';
 		if($filt_col!=null and $filt_val!=null){
@@ -247,7 +254,7 @@ class DBWorker{
 		}
 		return pg_fetch_all(pg_query($this->connection_ngtu,
 				$q));
-	}
+	}*/
 	public function GetPaternByName($name){
 			return pg_fetch_all(pg_query($this->connection_postgre,
 					'SELECT * FROM data_patterns WHERE table_name=\''.$name.'\''));

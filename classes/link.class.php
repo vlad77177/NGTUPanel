@@ -8,14 +8,14 @@ class Link{
 	
 	public function __construct($linkid,DBWorker $dbw){
 		$res=$dbw->GetLink($linkid);
-		$this->tablename=$res[0]['table_name'];
-		$this->colcreateddata=$res[0]['col_created_data'];
-		$cdd=StringConverter::GetArrayFromPostgreString($res[0]['col_display_data']);
+		$this->tablename=$res['table_name'];
+		$this->colcreateddata=$res['col_created_data'];
+		$cdd=StringConverter::GetArrayFromPostgreString($res['col_display_data']);
 		$this->coldisplaydata=array();
 		for($i=0;$i<count($cdd);$i++){
 			$this->coldisplaydata[$i]=$cdd[$i];
 		}
-		$this->creatednew=$res[0]['created_new'];
+		$this->creatednew=$res['created_new'];
 	}
 	public function GetTableName(){
 		return $this->tablename;

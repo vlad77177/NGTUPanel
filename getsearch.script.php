@@ -15,7 +15,8 @@
 		
 		$pattern=new DataPattern($_GET['pname'], $dbw);
 		$content='';
-		$result=$dbw->GetSomeDataFromTable($_GET['pname']);
+		//$result=$dbw->GetSomeDataFromTable($_GET['pname']);
+		$result=$dbw->GetNGTUTableRows($pattern->GetTableName(),null,null,null);
 		for($i=0;$i<count($result);$i++){
 			//$content=$content.$htmlc->ConstructResultBlock($result[$i], $data_pattern,$dbw);
 			$content=$content.$htmlc->ConstructResultBlock(
