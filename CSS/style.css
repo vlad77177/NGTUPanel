@@ -151,9 +151,10 @@ footer{
 	width:100%;
 	overflow:auto;
 }
+/*
 #div-table-info div,select{
 	margin:20px 0px 20px 0px;
-}
+}*/
 #div-table-info div:first-child{
 	margin-right:20px;
 }
@@ -302,7 +303,7 @@ footer{
 	display:flex;
 	flex-direction:row;
 	justify-content:space-around;
-	align-content:center;
+	align-content:left;
 }
 
 /* Пользователи админа */
@@ -349,50 +350,34 @@ footer{
 	border:0px;
 }
 
-/*Конкретный пользователь */
+/* Конкретный пользователь */
 
-#div-admpusermain-current-user,#div-admusermain-current-user-info-groups > div,#div-admpusermain-current-user-log,#div-admpusermain-current-user-rights{
+#div-admpusermain-current-user{
+	display:flex;
+	flex-direction:column;
+}
+#div-admpusermain-current-user > div, #div-admusermain-current-user-info-groups > div{
+	border:1px solid #cecece;
 	margin:20px 20px 20px 20px;
-	border:1px solid #bbbbbb;
 }
-#div-admpusermain-current-user > div{
-	display:flex;
-	flex-direction:column;
-	justify-content:space-between;
-}
-#div-admpusermain-current-user,#div-admusermain-current-user-info-groups{
+#div-admusermain-current-user-info-groups{
 	display:flex;
 	flex-direction:row;
 }
-#div-admusermain-current-user-info-groups div:nth-child(2){
-	display:flex;
-	flex-direction:column;
-}
-#div-admusermain-current-user-info-groups table tr td img{
+#div-admusermain-current-user-info-groups div:nth-child(2) img{
+	width:20px;
+	height:20px;
 	cursor:pointer;
-	width:1.5vw;
-	height:1.5vw;
 }
-#div-admpusermain-current-user-rights table{
-	font-size:1vw;
-}
-#div-admpusermain-current-user-rights table tr td img{
-	cursor:pointer;
-	width:1.5vw;
-	height:1.5vw;
-}
-#div-current-user-groups-button-select{
-	display:flex;
-	flex-direction:row;
-	justify-content:space-between;
-}
-
 /* Новая группа */
 
 #div-adminpanel-groups-content{
 	display:flex;
-	flex-direction:column;
-	align-items:center;	
+	width:100%;
+	padding-left:20px;
+	flex-direction:row;
+	justify-content:space-around;
+	align-items:left;	
 }
 #div-adminpanel-groups-label{
 	padding:20px 20px 20px 20px;
@@ -419,8 +404,9 @@ footer{
 	width:1.5vw;
 	height:1.5vw;
 }
-#div-adminpanel-groups-list-info{
-	
+#div-adminpanel-groups-list-info table tr td img{
+	width:1.5vw;
+	height:1.5vw;
 }
 #div-adminpanel-groups-list-right-info table{
 	font-size:1vw;
@@ -428,6 +414,55 @@ footer{
 #div-adminpanel-groups-list-right-info table tr td img{
 	width:1.5vw;
 	height:1.5vw;
+}
+
+/* Специальный доступ */
+
+.special-access-block{
+	border:3px solid #cecece;
+	margin:20px 0px 20px 0px;
+	width:100%;
+	display:flex;
+	flex-direction:column;
+}
+.special-access-block div:nth-child(1), .special-access-global-icons{
+	display:flex;
+	flex-direction:row;
+}
+.special-access-block div:nth-child(1){
+	justify-content:space-between;
+	align-items:center;
+}
+.special-access-global-icons div:nth-child(4){
+	margin-left:20px;
+}
+.special-access-global-icons div{
+	width:30px;
+	height:30px;
+	background-size:30px 30px;
+	cursor:pointer;
+}
+.special-access-enabled-items{
+	display:flex;
+	flex-direction:column;
+}
+.read-disabled{
+	background:url(images/read_disabled.png);
+}
+.read-enabled{
+	background:url(images/read_enabled.png);
+}
+.add-disabled{
+	background:url(images/add_disabled.png);
+}
+.add-enabled{
+	background:url(images/add_enabled.png);
+}
+.delete-disabled{
+	background:url(images/delete_disabled.png);
+}
+.delete-enabled{
+	background:url(images/delete_enabled.png);
 }
 
 /* Поиск */
@@ -471,4 +506,27 @@ footer{
 .result-info{
 	display:flex;
 	flex-direction:column;
+}
+
+/* Списки */
+
+#div-lists{
+	display:flex;
+	width:100%;
+	flex-direction:row;
+	justify-content:space-around;
+}
+#div-lists-names,#div-currentlist-items{
+	display:flex;
+	flex-direction:column;
+}
+#div-lists-create-list{
+	display:flex;
+	flex-direction:row;
+}
+.listsblock{
+	margin-top:5px;
+}
+.listsblock-content{
+	margin-left:20px;
 }

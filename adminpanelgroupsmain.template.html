@@ -1,16 +1,20 @@
 <div id="div-adminpanel-groups-content">
-	<div id="div-adminpanel-groups-label">Новая группа:</div>
-	<div id="div-adminpanel-groups-name">
-		<div id="div-adminpanel-groups-name-label">Название группы:</div>
-		<input type="text" name="name">
-		<button onclick="createGroup()">Создать группу</button>
+	<div>
+		<div id="div-adminpanel-groups-label">Новая группа:</div>
+		<div id="div-adminpanel-groups-name">
+			<div id="div-adminpanel-groups-name-label">Название группы:</div>
+			<input type="text" name="name">
+			<button onclick="createGroup()">Создать группу</button>
+		</div>
+		<div id="div-adminpanel-groups-list-label" class="class-label">Список групп:</div>
+		<div id="div-adminpanel-groups-list-info" class="class-grey-borders">{GROUP-LIST}</div>
 	</div>
-	<div id="div-adminpanel-groups-info">{NAMES-RIGHTS}</div>
+	<!--  <div id="div-adminpanel-groups-info">{NAMES-RIGHTS}</div>-->
+	<div>
+		<div id="div-adminpanel-groups-list">
+			<div id="div-adminpanel-groups-list-right-label" class="class-label">Права групп:</div>
+			<div id="div-adminpanel-groups-list-right-info" class="class-grey-borders"></div>
+		</div>
+	</div>
 </div>
 
-<div id="div-adminpanel-groups-list">
-	<div id="div-adminpanel-groups-list-label" class="class-label">Список групп:</div>
-	<div id="div-adminpanel-groups-list-info" class="class-grey-borders">{GROUP-LIST}</div>
-	<div id="div-adminpanel-groups-list-right-label" class="class-label">Права групп:</div>
-	<div id="div-adminpanel-groups-list-right-info" class="class-grey-borders"></div>
-</div>

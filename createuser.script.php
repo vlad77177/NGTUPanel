@@ -9,20 +9,20 @@
 		
 		$dbw->ConnectToPostgreSQL();
 		
-		$roleid=$dbw->GetRoleID($_POST['role']);
+		$roleid=$dbw->GetRoleData($_POST['role']);
 		$dbw->SetUserData($_SESSION['login'], $_SESSION['password']);
 		$userdata=$dbw->GetUserData();
 		
-		if($userdata[0]['role_type']=='superadm' or $userdata[0]['role_type']=='adm'){
+		if($userdata['role_type']=='superadm' or $userdata['role_type']=='adm'){
 		
 			$data=array(
 					'login'=>$_POST['login'],
 					'pass'=>$_POST['password'],
 					'name'=>$_POST['name'],
 					'surname'=>$_POST['surname'],
-					'user_role'=>$roleid[0]['id'],
+					'user_role'=>$roleid['id'],
 					'reg_date'=>date('Y-m-d'),
-					'who_reg'=>$userdata[0]['id'],
+					'who_reg'=>$userdata['id'],
 					'groups'=>'{}'
 			);
 			

@@ -11,4 +11,11 @@ include('classes/link.class.php');
 include('classes/itembuilder.class.php');
 include('classes/itemjsonbuilder.class.php');
 include('classes/itemresultbuilder.class.php');
+include('classes/user.class.php');
+include('classes/group.class.php');
+include('classes/tableconstructor.class.php');
+include('classes/lkconstructor.class.php');
+include('classes/list.class.php');
+include('classes/listbuilder.class.php');
+include('classes/listresultbuilder.class.php');
 ?>

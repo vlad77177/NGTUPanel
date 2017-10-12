@@ -20,6 +20,7 @@ class DataPattern{
 	private $cellcount;
 	private $neededright;
 	private $createfirst;
+	private $linkdisplaydata;
 	
 	public function __construct($patternname,DBWorker $dbw){
 		$res=$dbw->GetPaternByName($patternname);
@@ -53,8 +54,14 @@ class DataPattern{
 			$this->coltypes[$i]=$coltypes[$i];
 		}
 		$this->cellcount=$res[0]['cell_count'];
-		$this->neededright=$res[0]['needed_right'];
-		$this->createfirst=$res[0]['created_first_flag'];
+		$this->neededright=StringConverter::GetArrayFromPostgreString($res[0]['needed_right']);
+		if($res[0]['created_first_flag']=='t'){
+			$this->createfirst=true;
+		}
+		else{
+			$this->createfirst=false;
+		}
+		$this->linkdisplaydata=$res[0]['link_for_display_data'];
 	}
 	
 	public function GetName(){
@@ -92,6 +99,9 @@ class DataPattern{
 	}
 	public function GetNeededRights(){
 		return $this->neededright;
+	}
+	public function GetLinkIDForDisplayData(){
+		return $this->linkdisplaydata;
 	}
 	public function CreateFirst(){
 		return $this->createfirst;

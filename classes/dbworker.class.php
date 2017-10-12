@@ -75,12 +75,14 @@ class DBWorker{
 	}
 	//получение данных пользователя который сейчас в системе
 	public function GetUserData($login=null){
+		$result='';
 		if($login==null)
-			return pg_fetch_all(pg_query($this->connection_postgre,
+			$result=pg_fetch_all(pg_query($this->connection_postgre,
 					'SELECT users.*,user_roles.role_type,user_roles.role_name FROM users JOIN user_roles ON users.user_role=user_roles.id WHERE login=\''.$this->userdata[0]['login'].'\''));
 		else 
-			return pg_fetch_all(pg_query($this->connection_postgre,
+			$result=pg_fetch_all(pg_query($this->connection_postgre,
 					'SELECT users.*,user_roles.role_type,user_roles.role_name FROM users JOIN user_roles ON users.user_role=user_roles.id WHERE login=\''.$login.'\''));
+		return $result[0];
 	}
 	
 	public function CheckUserLog(){
@@ -101,7 +103,7 @@ class DBWorker{
 			return false;
 	}
 	
-	public function GetNGTUTableRows($table,$condition_columns=null,$condition_values=null,$condition_types=null){
+	public function GetNGTUTableRows($table,$condition_columns=null,$condition_values=null,$condition_types=null,$connection=null){
 		$q='SELECT * FROM '.$table;
 		if(is_array($condition_columns) and is_array($condition_values) and is_array($condition_types)){
 			$q=$q.' WHERE';
@@ -117,7 +119,9 @@ class DBWorker{
 					$q=$q.' AND';
 			}
 		}
-		return pg_fetch_all(pg_query($this->connection_ngtu,$q));
+		if($connection==null)
+			return pg_fetch_all(pg_query($this->connection_ngtu,$q));
+		else return pg_fetch_all(pg_query($connection,$q));
 	}
 	
 	public function GetTableNames($connection){
@@ -150,13 +154,17 @@ class DBWorker{
 				'SELECT * FROM user_roles'));
 	}
 	
-	public function GetRightsNames(){
+	public function GetRights(){
 		return $result=pg_fetch_all(pg_query($this->connection_postgre,
-				'SELECT id,name FROM names_rights'));
+				'SELECT * FROM names_rights'));
 	}
 	public function AddGroup($name,$r_read,$r_add,$r_delete){
 		return $result=pg_query($this->connection_postgre,
 				'INSERT INTO groups(name,read,add,delete) VALUES(\''.$name.'\',\''.$r_read.'\',\''.$r_add.'\',\''.$r_delete.'\')');
+	}
+	public function AddList($name,$table){
+		return $result=pg_query($this->connection_postgre,
+				'INSERT INTO lists(name,table_name,items_ids) VALUES(\''.$name.'\',\''.$table.'\',\'{}\')');
 	}
 	public function GetGroupNames(){
 		return $result=pg_fetch_all(pg_query($this->connection_postgre,
@@ -200,10 +208,11 @@ class DBWorker{
 		return pg_fetch_all(pg_query($this->connection_postgre,
 				'SELECT * FROM groups WHERE id<>ALL(SELECT unnest(groups) FROM users WHERE id='.$id.')'));
 	}
+	/*
 	public function GetSummRightTable($id,$tablename){
 		return pg_fetch_all(pg_query($this->connection_postgre,
 				'SELECT DISTINCT unnest('.$tablename.') FROM groups WHERE id=ANY(SELECT unnest(groups) FROM users WHERE id='.$id.') ORDER BY unnest('.$tablename.')'));
-	}
+	}*/
 	public function AddGroupForUser($login,$group_id){
 		return pg_fetch_all(pg_query($this->connection_postgre,
 				'UPDATE users SET groups=array_append(groups,'.$group_id.') WHERE login=\''.$login.'\''));
@@ -212,9 +221,9 @@ class DBWorker{
 		return pg_fetch_all(pg_query($this->connection_postgre,
 				'DELETE FROM groups WHERE name=\''.$gname.'\''));
 	}
-	public function DropUserGroup($gname,$userdata){
+	public function DropUserGroup($gname,User $user){
 		return $result=pg_query($this->connection_postgre,
-				'UPDATE users SET groups=array_remove(users.groups,(SELECT id FROM groups WHERE name=\''.$gname.'\')) WHERE id='.$userdata[0]['id'].'');
+				'UPDATE users SET groups=array_remove(users.groups,(SELECT id FROM groups WHERE name=\''.$gname.'\')) WHERE id='.$user->GetID().'');
 	}
 	public function UpdateGroup($gname,$read,$add,$delete){
 		return $result=pg_query($this->connection_postgre,
@@ -326,5 +335,16 @@ class DBWorker{
 			return $result=pg_fetch_all(pg_query($this->connection_ngtu,
 					'SELECT * FROM '.$table.' WHERE '.$column.'=\''.$data.'\''));
 		}
+	}
+	
+	public function GetList($id){
+		$result=pg_fetch_all(pg_query($this->connection_postgre,
+				'SELECT * FROM lists WHERE id='.$id.''));
+		return $result[0];
+	}
+	public function GetLists(){
+		$result=pg_fetch_all(pg_query($this->connection_postgre,
+				'SELECT * FROM lists'));
+		return $result;
 	}
 }

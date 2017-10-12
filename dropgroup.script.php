@@ -10,9 +10,9 @@ $dbw->ConnectToPostgreSQL();
 $dbw->SetUserData();
 
 if($dbw->CheckUserLog() and $dbw->CheckLoggedUserAdmin()){
-	$userdata=$dbw->GetUserData();
-	if($userdata[0]['role_type']=='superadm' or $userdata[0]['role_type']=='adm'){
-		$user=$dbw->GetUserData($_POST['username']);
+	$user=new User($dbw->GetUserData());
+	if($user->GetUserRole()==1 or $user->GetUserRole()==2){
+		$user=new User($dbw->GetUserData($_POST['username']));
 		$dbw->DropUserGroup($_POST['gname'], $user);
 		echo true;
 	}

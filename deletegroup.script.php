@@ -10,8 +10,8 @@
 	$dbw->SetUserData();
 	
 	if($dbw->CheckUserLog() and $dbw->CheckLoggedUserAdmin()){
-		$userdata=$dbw->GetUserData();
-		if($userdata[0]['role_type']=='superadm' or $userdata[0]['role_type']=='adm'){
+		$user=new User($dbw->GetUserData());
+		if($user->GetUserRole()==1 or $user->GetUserRole()==2){
 			$dbw->DeleteGroup($_POST['gname']);
 			echo true;
 		}

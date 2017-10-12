@@ -7,13 +7,12 @@
 	$dbw->ConnectToPostgreSQL();
 	
 	if($dbw->CheckUserLog()){
-		$userdata=$dbw->GetUserData($_SESSION['login']);
-		if($userdata[0]['role_type']=='superadm' or $userdata[0]['role_type']=='adm'){
-			
+		$user=new User($dbw->GetUserData($_SESSION['login']));
+		if($user->GetUserRole()==1 or $user->GetUserRole()==2){	
 			switch($_REQUEST['action']){
 				case 1:{
 					$group_id=$dbw->GetGroupData($_POST['groupname']);
-					echo $res=$dbw->AddGroupForUser($_POST['username'], $group_id[0]['id']);
+					$dbw->AddGroupForUser($_POST['username'], $group_id['id']);
 					break;
 				}
 			}

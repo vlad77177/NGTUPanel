@@ -29,16 +29,17 @@
 		$user=$DBW->FindUser($_SESSION['login'], $_SESSION['password']);
 		
 		$htmlc=new HTMLConstructor();
+		$lkc=new LKConstructor();
 		
 		$DBW->SetUserData($_SESSION['login'],$_SESSION['password']);
 		
 		$userdata=$DBW->GetUserData();
 		
 		$userdata_labels=array(
-				'UMW-AVATAR'=>$htmlc->ConstructUMWAvatar($userdata[0]['avatar']),
-				'UMW-LOGIN'=>$userdata[0]['login'],
-				'UMW-NAME'=>StringConverter::ConvertTo1251($userdata[0]['name']).' '.StringConverter::ConvertTo1251($userdata[0]['surname']),
-				'UMW-ROLE'=>StringConverter::ConvertTo1251($userdata[0]['role_name']),
+				'UMW-AVATAR'=>$lkc->ConstructUMWAvatar($userdata['avatar']),
+				'UMW-LOGIN'=>$userdata['login'],
+				'UMW-NAME'=>StringConverter::ConvertTo1251($userdata['name']).' '.StringConverter::ConvertTo1251($userdata['surname']),
+				'UMW-ROLE'=>StringConverter::ConvertTo1251($userdata['role_name']),
 		);
 		
 		

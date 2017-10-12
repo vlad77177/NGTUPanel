@@ -1,35 +1,32 @@
 /*
- * 	Р—Р°РґР°С‡Рё: 
- * 		1. РџРѕС‚РѕРј РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ РЅР°РІРµСЃРёС‚СЊ РІСЃРµ СЃРѕР±С‹С‚РёСЏ РЅР° JS, Р° РЅРµ РІ РєРѕРґРµ php
- * 		2. РџСЂРѕРІРµСЂРёС‚СЊ, РјР± РїРµСЂРµРїРёСЃР°С‚СЊ РіРґРµ РЅР°РґРѕ POST Р·Р°РїСЂРѕСЃС‹, РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ GET Рё DELETE
+ * 	Задачи: 
+ * 		1. Потом обязательно навесить все события на JS, а не в коде php
+ * 		2. Проверить, мб переписать где надо POST запросы, использовать GET и DELETE
  */
 
-var triangle_right='в–є';
-var triangle_down='в–ј';
+var color='#12de2c'; //зеленый
+var color_yellow='#ffff00'; 
+var color_white='#ffffff'; 
 
-var color='#12de2c'; //Р·РµР»РµРЅС‹Р№
-var color_yellow='#ffff00';
-var color_white='#ffffff';
-
-var currentElement=null; //С‚РµРєС‰РёР№ СЌР»РµРјРµРЅС‚ РјРµРЅСЋ(РїРѕР»СЊР·РѕРІР°С‚РµР»Рё, РіСЂСѓРїРїС‹, Р»РѕРіРё)
-var currentElementUserList=null; //С‚РµРєСѓС‰РёР№ СЌР»РµРјРµРЅС‚ РёР· Р»РёСЃС‚Р° СЃ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏРјРё
+var currentElement=null; //текщий элемент меню(пользователи, группы, логи)
+var currentElementUserList=null; //текущий элемент из листа с пользователями
 var currentGroup=null;
 
 var currentUserLogin=null;
 
-var right_matrix=null; //РїСЂР°РІР° РіСЂСѓРїРїС‹(РЅРѕРІРѕР№)
-var right_current_matrix=null; //РІС‹Р±СЂР°РЅРЅРѕР№ РіСЂСѓРїРїС‹
-var right_current_matrix_new=null; //РЅРѕРІС‹Рµ Р·РЅР°С‡РµРЅРёСЏ
+var right_matrix=null; //права группы(новой)
+var right_current_matrix=null; //выбранной группы
+var right_current_matrix_new=null; //новые значения
 
-var right_user_matrix=null;	// РѕС‚РґРµР»СЊРЅС‹Рµ РїСЂР°РІР° СЋР·РµСЂР°
-var right_user_matrix_new=null;	//Сѓ Рё РЅРѕРІС‹Рµ СЃРѕРѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕ
+var right_user_matrix=null;	// отдельные права юзера
+var right_user_matrix_new=null;	//у и новые соответственно
 
 var gname_min=3;
 var gname_max=30;
 
-// РўСѓС‚ РґР»СЏ СЋР·РµСЂР°
+// Тут для юзера
 
-//РќР°РІРµС€РёРІР°РµРј СЃРѕР±С‹С‚РёСЏ
+//Навешиваем события
 
 $(document).ready(function(){
 	
@@ -37,7 +34,21 @@ $(document).ready(function(){
 
 //
 
-function createuser(){//Р”РѕР±Р°РІР»СЏРµРј
+function alertMatrix(matrix){
+	var string;
+	for(var i=0;i<matrix.lenght;i++){
+		for(var j=0;j<3;j++){
+			if(matrix[i][j]==true)
+				string=string+"1";
+			else
+				string=string+"0";
+		}
+		string=string+' ';
+	}
+	alert(string);
+}
+
+function createuser(){//Добавляем
 	
 	var role=$('#div-admpusermain-create-user table #td-role select option:selected').text();
 	var login=$('#div-admpusermain-create-user table input[name="login"]').val();
@@ -47,12 +58,12 @@ function createuser(){//Р”РѕР±Р°РІР»СЏРµРј
 	var surname=$('#div-admpusermain-create-user table input[name="surname"]').val();
 	
 	if(login=='' || password=='' || repeat_password=='' || name=='' || surname==''){
-		alert('Р—Р°РїРѕР»РЅРёС‚Рµ РІСЃРµ РїРѕР»СЏ!');
+		alert('Заполните все поля!');
 		return;
 	}
 	
 	if(password!=repeat_password){
-		alert('РџР°СЂРѕР»Рё РЅРµ СЃРѕРІРїР°РґР°СЋС‚!');
+		alert('Пароли не совпадают!');
 		return;
 	}
 	var userdata={'role':role,'login':login,'password':password,'name':name,'surname':surname};
@@ -69,19 +80,19 @@ function createuser(){//Р”РѕР±Р°РІР»СЏРµРј
 		},
 		error: function(jqXHR,exception){
     		if (jqXHR.status === 0) {
-    			alert('РќР• РїРѕРґРєР»СЋС‡РµРЅ Рє РёРЅС‚РµСЂРЅРµС‚Сѓ!');
+    			alert('НЕ подключен к интернету!');
 			} else if (jqXHR.status == 404) {
-			alert('РќР• РЅР°Р№РґРµРЅР° СЃС‚СЂР°РЅРёС†Р° Р·Р°РїСЂРѕСЃР° [404])');
+			alert('НЕ найдена страница запроса [404])');
 			} else if (jqXHR.status == 500) {
-			alert('РќР• РЅР°Р№РґРµРЅ РґРѕРјРµРЅ РІ Р·Р°РїСЂРѕСЃРµ [500].');
+			alert('НЕ найден домен в запросе [500].');
 			} else if (exception === 'parsererror') {
-			alert("РћС€РёР±РєР° РІ РєРѕРґРµ: \n"+jqXHR.responseText);
+			alert("Ошибка в коде: \n"+jqXHR.responseText);
 			} else if (exception === 'timeout') {
-			alert('РќРµ РѕС‚РІРµС‚РёР» РЅР° Р·Р°РїСЂРѕСЃ.');
+			alert('Не ответил на запрос.');
 			} else if (exception === 'abort') {
-			alert('РџСЂРµСЂРІР°РЅ Р·Р°РїСЂРѕСЃ Ajax.');
+			alert('Прерван запрос Ajax.');
 			} else {
-			alert('РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР°:\n' + jqXHR.responseText);
+			alert('Неизвестная ошибка:\n' + jqXHR.responseText);
 			}
     	}
 	});
@@ -107,7 +118,7 @@ function getcurrentuserinfo(login){
 				currentElementUserList.css('color',color);
 			}
 			
-			//РЅР°РІРµС€РёРІР°РµРј СЃРѕР±С‹С‚РёСЏ СѓРґР°Р»РµРЅРёСЏ РіСЂСѓРїРїС‹ Сѓ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
+			//навешиваем события удаления группы у пользователя
 			var table=$('#div-admusermain-current-user-info-groups div:eq(1) table');
 			
 			for(var i=0;i<$(table).find('tr').length;i++){
@@ -137,7 +148,7 @@ function addusergroup(){
 	});
 }
 
-//Р“СЂСѓРїРїС‹:
+//Группы:
 
 function deletegroup(name){
 	$.ajax({
@@ -195,10 +206,6 @@ function getcontent(action){
 			break;
 		}
 		case 4:{
-			newaction=8;
-			break;
-		}
-		case 5:{
 			newaction=3;
 			break;
 		}
@@ -212,7 +219,6 @@ function getcontent(action){
 		dataType:'html',
 		success:function(result){
 			$('#div-adminpanel-info').html(result);
-			//1 - Р»РёС‡РЅС‹Р№ РєР°Р±РёРЅРµС‚ - РїРѕР»СЊР·РѕРІР°С‚РµР»Рё
 			if(newaction==1){
 				
 				$('#div-admpusermain-create-user table input[name="login"]').keydown(function(e){
@@ -243,7 +249,6 @@ function getcontent(action){
 				}
 				
 			}
-			//2 - Р»РёС‡РЅС‹Р№ РєР°Р±РёРЅРµС‚ РіСЂСѓРїРїС‹
 			if(newaction==2){
 				
 				right_matrix=new Array();
@@ -256,24 +261,24 @@ function getcontent(action){
 					return validDown($(this),gname_min,gname_max,e);
 				});
 				
-				getrights(0);//РїРѕРґРіСЂСѓР·РєР° РїСЂР°РІ РІС‹Р±СЂР°РЅРЅРѕР№ РіСЂСѓРїРїС‹, РїРµСЂРІРѕР№ РІ СЃР»СѓС‡Р°Рµ РµСЃР»Рё РІРєР»Р°РґРєР° РѕС‚РєСЂС‹С‚Р°
+				getrights(0);
 			}
 		},
 		error: function(jqXHR,exception){
     		if (jqXHR.status === 0) {
-    			alert('РќР• РїРѕРґРєР»СЋС‡РµРЅ Рє РёРЅС‚РµСЂРЅРµС‚Сѓ!');
+    			alert('НЕ подключен к интернету!');
 			} else if (jqXHR.status == 404) {
-			alert('РќР• РЅР°Р№РґРµРЅР° СЃС‚СЂР°РЅРёС†Р° Р·Р°РїСЂРѕСЃР° [404])');
+			alert('НЕ найдена страница запроса [404])');
 			} else if (jqXHR.status == 500) {
-			alert('РќР• РЅР°Р№РґРµРЅ РґРѕРјРµРЅ РІ Р·Р°РїСЂРѕСЃРµ [500].');
+			alert('НЕ найден домен в запросе [500].');
 			} else if (exception === 'parsererror') {
-			alert("РћС€РёР±РєР° РІ РєРѕРґРµ: \n"+jqXHR.responseText);
+			alert("Ошибка в коде: \n"+jqXHR.responseText);
 			} else if (exception === 'timeout') {
-			alert('РќРµ РѕС‚РІРµС‚РёР» РЅР° Р·Р°РїСЂРѕСЃ.');
+			alert('Не ответил на запрос.');
 			} else if (exception === 'abort') {
-			alert('РџСЂРµСЂРІР°РЅ Р·Р°РїСЂРѕСЃ Ajax.');
+			alert('Прерван запрос Ajax.');
 			} else {
-			alert('РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР°:\n' + jqXHR.responseText);
+			alert('Неизвестная ошибка:\n' + jqXHR.responseText);
 			}
     	}
 	});
@@ -296,47 +301,36 @@ function getrights(n){
 			setMatrix(right_current_matrix,$('#div-adminpanel-groups-list-right-info'),'current',0);
 			setMatrix(right_current_matrix_new,$('#div-adminpanel-groups-list-right-info'),'change',0);
 			
-			//СЂР°СЃРєСЂС‹С‚РёРµ СЃРІРёС‚РєР° РґР»СЏ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕР№ РЅР°СЃС‚СЂРѕР№РєРё РїСЂР°РІ
-			for(var i=0;i<$('div#div-adminpanel-groups-list-right-info').find('div.special-access-block').length;i++){
-				var block=$('div#div-adminpanel-groups-list-right-info').find('div.special-access-block:eq('+i+')');
-				var triangle=$(block).find('div.special-access-global-icons div:eq(3)');//С‚СЂРµСѓРіРѕР»СЊРЅРёС‡РµРі :DD
-				//СЃРѕР±С‹С‚РёРµ РєР»РёРєР° РїРѕ С‚СЂРµСѓРіРѕР»СЊРЅРёРєСѓ
-				$(triangle).click({rightid:$(block).data('rightid'),block:block,triangle:triangle},function(e){
-					if($(e.data.triangle).html()==triangle_right){
-						$.ajax({
-							url:'getadmincontent.script.php?action=7',
-							data:{rightid:e.data.rightid,groupname:currentGroup.html()},
-							type:'GET',
-							success:function(result){
-								$(e.data.block).find('div.special-access-enabled-items').html(result);
-								$(e.data.triangle).html(triangle_down);
-							}
-						})
-					}
-					else{
-						$(e.data.block).find('div.special-access-enabled-items').html('');
-						$(e.data.triangle).html(triangle_right);
-					}
-				});
+			var table=$('#div-adminpanel-groups-list-right-info table');
+			
+			for(var i=0;i<$(table).find('tr').length;i++){
+				var row=$(table).find('tr:eq('+i+')');
+				for(var j=0;j<$(row).find('td').length-1;j++){
+					$(row).find('td:eq('+(j+1)+')').click({row:i, column:j, mode:0, mode2:'upd'},function(e){
+						changeRight(e.data.row,e.data.column,e.data.mode,e.data.mode2);
+						drawRightChanges(right_current_matrix,right_current_matrix_new);
+					});
+				}
 			}
-			//
 		}
 	});
 }
 
 function setMatrix(matrix,table,mode,row_start){
 	var classes_enabled=new Array('read-enabled','add-enabled','delete-enabled');
-	matrix=new Array();
-	var blocks=$(table).find('div.special-access-block');
-	for(var i=0;i<$(blocks).length;i++){
-		var icons_container=$(blocks).eq(i).find('div.special-access-global-icons');
-		matrix[i]=new Array();
+	right_current_matrix=new Array();
+	alert($(table).find('div').lenght);
+	for(var i=0;i<$(table).find('div').lenght;i++){
+		var block=$(table).find('div:eq('+i+')');
+		var icons_container=$(block).find('div div:eq(1)');
+		right_current_matrix[i]=new Array();
 		for(var j=0;j<3;j++){
-			if($(icons_container).find('div:eq('+j+')').hasClass(classes_enabled[j]) && mode=='current'){
-				matrix[i][j]=true;
+			if($(icons_container).find('div:eq('+j+')').hasClass(classes_enabled[j])){
+				right_current_matrix[i][j]=true;
+				alert('i='+i+' j='+j+' true');
 			}
 			else{
-				matrix[i][j]=false;
+				right_current_matrix[i][j]=false;
 			}
 		}
 	}
@@ -359,7 +353,7 @@ function validDown(element,min,max,event){
 	return true;
 }
 
-//РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РіР°Р»РѕС‡РєРё Рё РєСЂРµСЃС‚РёРєРё РґР»СЏ РґРѕР±Р°РІР»РЅРёСЏ РЅРѕРІРѕР№ РіСЂСѓРїРїС‹ РёР»Рё РёР·РјРµРЅРµРЅРёСЏ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІРІСѓСЋС‰РµР№
+//Устанавливает галочки и крестики для добавлния новой группы или изменения уже существвующей
 function changeRight(row,column,mode,mode2){
 	
 	//alert(row+' '+column+' '+mode+' '+mode2);
@@ -383,7 +377,7 @@ function changeRight(row,column,mode,mode2){
 		add_index=0;
 	}
 	
-	//mode==0 - РїРµСЂРІРѕРµ РІРєР»СЋС‡РµРЅРёРµ
+	//mode==0 - первое включение
 	
 	if(mode==0){
 		if(matrix[row][column]==false){
@@ -402,7 +396,7 @@ function changeRight(row,column,mode,mode2){
 		}
 	}
 	else{
-		//mode==1 - СЂРёСЃСѓРµРј С‚СЂСѓ
+		//mode==1 - рисуем тру
 		if(mode==1){
 			matrix[row][column]=true;
 			$(''+div_link+' table tr:eq('+(row+add_index)+') td:eq('+(column+1)+') img').attr('src','images/ok.png');
@@ -436,7 +430,7 @@ function drawRightChanges(mcr,mcrn){
 	}
 	if(changed==true){
 		if($(element+' *').is('button')==false){
-			$(element).append('<button>РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ</button>');
+			$(element).append('<button>Сохранить изменения</button>');
 			$(element+' button').click({name:currentGroup.text()},function(e){
 				updateGroup(e.data.name,right_current_matrix_new);
 			});
@@ -466,7 +460,7 @@ function updateGroup(name,matrix){
 function createGroup(){
 	var name=$('#div-adminpanel-groups-name input').val();
 	if(name.length<=gname_min+1 || name.length>gname_max){
-		alert('Р”Р»РёРЅР° РёРјРµРЅРё РЅРµ РјРµРЅРµРµ '+gname_min+'СЃР»РѕРІ!');
+		alert('Длина имени не менее '+gname_min+'слов!');
 	}
 	else{
 		var rights=JSON.stringify(right_matrix);
@@ -478,26 +472,6 @@ function createGroup(){
 			success:function(result){
 				if(result==true)
 					getcontent(3);
-				else
-					alert(result);
-			}
-		});
-	}
-}
-function createList(){
-	var name=$('#div-lists-create-list input').val();
-	if(name.length<=gname_min+1 || name.length>gname_max){
-		alert('Р”Р»РёРЅР° РёРјРµРЅРё РЅРµ РјРµРЅРµРµ '+gname_min+'СЃР»РѕРІ!');
-	}
-	else{
-		$.ajax({
-			url:'addlist.script.php',
-			data:{name:name,table:$('div#div-lists-create-list').find('select option:selected').data('table')},
-			type:'POST',
-			
-			success:function(result){
-				if(result==true)
-					getcontent(4);
 				else
 					alert(result);
 			}
